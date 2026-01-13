@@ -6,7 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class MemberActivityBalance extends Model
 {
-    protected $fillable = ['member_id', 'activity_id', 'remaining_count', 'daily_minutes_limit', 'used_today_minutes', 'last_used_date'];
+    protected $fillable = [
+        'member_id',
+        'activity_id',
+        'remaining_count',
+        'daily_limit',
+        'used_today',
+        'last_used_date',
+    ];
 
     public function member()
     {

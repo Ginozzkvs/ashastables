@@ -1,65 +1,224 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Staff Activity Panel</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
 
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
     <style>
-        body { font-family: Arial; background: #f4f6f8; padding: 20px }
-        .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px }
-        .btn { padding: 15px; border-radius: 10px; width: 100%; font-size: 18px }
-        .btn-ok { background: #16a34a; color: white }
-        .btn-no { background: #dc2626; color: white }
-        .disabled { opacity: .5 }
-    </style>
-    <script>
-    let qrScanner;
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+        }
 
-    const staffActivityComponent = {
-        qr: '',
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.08);
+        }
+
+        .btn {
+            padding: 14px;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-ok { background: #16a34a; color: #fff; }
+        .btn-disabled { background: #9ca3af; color: #fff; cursor: not-allowed; }
+
+        /* NFC PANEL */
+        .nfc-panel {
+            text-align: center;
+            padding: 40px 20px;
+            border: 2px dashed #2563eb;
+            border-radius: 16px;
+            cursor: pointer;
+        }
+
+        .nfc-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .uid {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2563eb;
+            font-size: 18px;
+        }
+
+        /* MODAL */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            width: 320px;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .success-text {
+            color: #16a34a;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .error-text {
+            color: #dc2626;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body x-data="scanComponent()" x-init="$nextTick(() => $refs.nfc.focus())">
+
+<h2>🐎 Staff Activity Panel</h2>
+
+<!-- NFC SCAN PANEL -->
+<div class="card nfc-panel" @click="$refs.nfc.focus()">
+    <div class="nfc-icon">📶</div>
+    <h3>Tap NFC Card</h3>
+    <p x-show="!card_uid">Ready to scan</p>
+    <p x-show="card_uid" class="uid" x-text="card_uid"></p>
+
+    <!-- Hidden input for NFC reader -->
+    <input
+        x-ref="nfc"
+        x-model="card_uid"
+        @input="onScanInput"
+        type="text"
+        autocomplete="off"
+        style="position:absolute; opacity:0; width:1px; height:1px;"
+    >
+</div>
+
+<!-- ERROR -->
+<template x-if="error">
+    <div class="card" style="color:red" x-text="error"></div>
+</template>
+
+<!-- MEMBER INFO -->
+<template x-if="member">
+    <div class="card">
+        <h3 x-text="member.name"></h3>
+        <p>Valid Until: <strong x-text="member.end_date"></strong></p>
+    </div>
+</template>
+
+<!-- ACTIVITIES -->
+<template x-for="a in activities" :key="a.id">
+    <div class="card">
+        <h3 x-text="a.activity.name"></h3>
+        <p>Remaining: <strong x-text="a.remaining_count"></strong></p>
+
+        <button
+            :class="Number(a.remaining_count) > 0 ? 'btn btn-ok' : 'btn btn-disabled'"
+            :disabled="Number(a.remaining_count) <= 0"
+            @click="openConfirm(a.activity.id)"
+        >
+            USE
+        </button>
+    </div>
+</template>
+
+<!-- MODAL -->
+<div x-show="modal.show" x-cloak class="modal-backdrop">
+    <div class="modal-box">
+
+        <!-- CONFIRM -->
+        <template x-if="modal.type === 'confirm'">
+            <div>
+                <h3>Confirm</h3>
+                <p x-text="modal.message"></p>
+
+                <div class="modal-actions">
+                    <button class="btn btn-disabled" @click="closeModal()">Cancel</button>
+                    <button class="btn btn-ok" @click="confirmUse()">Confirm</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- SUCCESS -->
+        <template x-if="modal.type === 'success'">
+            <div class="success-text">
+                ✔ <span x-text="modal.message"></span>
+            </div>
+        </template>
+
+        <!-- ERROR -->
+        <template x-if="modal.type === 'error'">
+            <div class="error-text">
+                ✖ <span x-text="modal.message"></span>
+            </div>
+        </template>
+
+    </div>
+</div>
+
+<script>
+function scanComponent() {
+    return {
+        card_uid: '',
         member: null,
         activities: [],
         error: null,
 
-        startScan() {
-            document.getElementById('qr-reader').style.display = 'block';
+        scanTimer: null,
+        scanLocked: false,
 
-            qrScanner = new Html5Qrcode("qr-reader");
+        modal: {
+            show: false,
+            type: 'confirm',
+            message: '',
+            activityId: null,
+        },
 
-            qrScanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: 250 },
-                (decodedText) => {
-                    // Update Alpine.js state
-                    this.qr = decodedText;
+        onScanInput() {
+            if (this.scanLocked) return
 
-                    // Stop camera
-                    qrScanner.stop();
-                    document.getElementById('qr-reader').style.display = 'none';
+            clearTimeout(this.scanTimer)
 
-                    // Auto-load member
-                    this.loadMember();
-                },
-                (error) => {
-                    console.error('QR scan error:', error);
+            this.scanTimer = setTimeout(() => {
+                if (this.card_uid.length >= 4) {
+                    this.scanLocked = true
+                    this.loadMember()
                 }
-            );
+            }, 250)
         },
 
         loadMember() {
-            if (!this.qr) {
-                this.error = 'Please scan a QR code first';
-                return;
-            }
-            
             fetch('/staff/activity/member', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ qr: this.qr })
+                body: JSON.stringify({ card_uid: this.card_uid })
             })
             .then(r => r.json())
             .then(data => {
@@ -73,170 +232,67 @@
                     this.activities = data.activities
                 }
             })
-            .catch(err => {
-                console.error('Error loading member:', err);
-                this.error = 'Failed to load member data';
-            })
         },
 
-        useActivity(activityId) {
-            if (!confirm('Use this activity now?')) return
+        openConfirm(activityId) {
+            this.modal = {
+                show: true,
+                type: 'confirm',
+                message: 'Use this activity now?',
+                activityId
+            }
+        },
 
-            fetch('/staff/activity/use', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    qr: this.qr,
-                    activity_id: activityId
+        closeModal() {
+            this.modal.show = false
+        },
+
+        async confirmUse() {
+            try {
+                const res = await fetch('/staff/activity/use', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        card_uid: this.card_uid,
+                        activity_id: this.modal.activityId
+                    })
                 })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error)
+
+                const data = await res.json()
+
+                if (data.success) {
+                    this.modal.type = 'success'
+                    this.modal.message = data.message
                 } else {
-                    this.loadMember() // refresh balances
+                    this.modal.type = 'error'
+                    this.modal.message = data.message
                 }
-            })
-        }
-    }
 
-    function showSuccess(message) {
-        document.getElementById('ok-sound').play();
-        const el = document.getElementById('action-overlay');
-        el.className = 'success';
-        el.innerHTML = '✔ ' + message;
-        el.style.display = 'flex';
+                setTimeout(() => this.reset(), 1500)
 
-        setTimeout(() => el.style.display = 'none', 1500);
-    }
-
-    function showError(message) {
-        document.getElementById('err-sound').play();
-        const el = document.getElementById('action-overlay');
-        el.className = 'error';
-        el.innerHTML = '✖ ' + message;
-        el.style.display = 'flex';
-
-        setTimeout(() => el.style.display = 'none', 1500);
-    }
-    </script>
-</head>
-
-<body x-data="staffActivityComponent">
-
-<h2>🐎 Staff Activity Panel</h2>
-
-<div class="card">
-    <input
-        id="qr_code"
-        x-model="qr"
-        @keyup.enter="loadMember"
-        placeholder="Scan QR / Enter Code"
-        style="width:100%; padding:15px; font-size:18px"
-    >
-    <button
-    @click="startScan()"
-    style="padding:15px; width:100%; font-size:18px"
->
-    📷 Scan Membership QR
-</button>
-<div id="qr-reader" style="width:100%; display:none;"></div>
-</div>
-
-<template x-if="error">
-    <div class="card" style="color:red" x-text="error"></div>
-</template>
-
-<template x-if="member">
-    <div class="card">
-        <h3 x-text="member.name"></h3>
-        <p>Valid Until: <span x-text="member.end_date"></span></p>
-    </div>
-</template>
-
-<template x-for="a in activities" :key="a.id">
-    <div class="card">
-        <h3 x-text="a.activity.name"></h3>
-        <p>Remaining: <strong x-text="a.remaining_count"></strong></p>
-
-        <button
-            class="btn btn-ok"
-            :class="{ 'disabled': a.remaining_count <= 0 }"
-            :disabled="a.remaining_count <= 0"
-            @click="useActivity(a.activity_id)"
-        >
-            USE
-        </button>
-    </div>
-</template>
-
-<script>
-function useActivity(activityId) {
-    fetch(`/api/use-activity`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            } catch {
+                this.modal.type = 'error'
+                this.modal.message = 'System error'
+                setTimeout(() => this.reset(), 1500)
+            }
         },
-        body: JSON.stringify({
-            qr_code: document.getElementById('qr_code').value,
-            activity_id: activityId
-        })
-    })
-    .then(r => r.json())
-    .then(res => {
-        if (res.success) {
-            showSuccess(res.message);
-            refreshBalances();
-        } else {
-            showError(res.message);
+
+        reset() {
+            this.modal.show = false
+            this.card_uid = ''
+            this.member = null
+            this.activities = []
+            this.error = null
+            this.scanLocked = false
+
+            this.$nextTick(() => this.$refs.nfc.focus())
         }
-    })
-    .catch(() => showError('System error'));
+    }
 }
 </script>
-<div
-    id="action-overlay"
-    style="
-        position:fixed;
-        inset:0;
-        display:none;
-        align-items:center;
-        justify-content:center;
-        z-index:9999;
-        font-size:32px;
-        font-weight:bold;
-        color:white;
-    "
-></div>
-<style>
-.success {
-    background: rgba(0, 160, 90, 0.95);
-    animation: pop 0.3s ease;
-}
-
-.error {
-    background: rgba(200, 40, 40, 0.95);
-    animation: shake 0.4s;
-}
-
-@keyframes pop {
-    from { transform: scale(0.9); opacity:0 }
-    to { transform: scale(1); opacity:1 }
-}
-
-@keyframes shake {
-    0% { transform: translateX(0) }
-    25% { transform: translateX(-10px) }
-    50% { transform: translateX(10px) }
-    75% { transform: translateX(-10px) }
-    100% { transform: translateX(0) }
-}
-</style>
 
 </body>
 </html>

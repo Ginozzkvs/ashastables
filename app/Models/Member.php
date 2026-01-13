@@ -3,12 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class Member extends Model
 {
-    protected $fillable = ['name', 'phone', 'qr_code', 'membership_id', 'start_date', 'end_date', 'active'];
+    use HasFactory;
 
+  protected $fillable = [
+    'name',
+    'phone',
+    'email',
+    'card_uid',
+    'membership_id',
+    'start_date',
+    'end_date',
+    'active',
+
+];
+
+    /* =====================
+     | Relationships
+     ===================== */
     public function membership()
     {
         return $this->belongsTo(Membership::class);
@@ -19,24 +35,28 @@ class Member extends Model
         return $this->hasMany(MemberActivityBalance::class);
     }
 
-    public static function boot()
+    /* =====================
+     | Model Events
+     ===================== */
+    protected static function booted()
     {
-        parent::boot();
-
-        // When a new member is created, auto-generate activity balances
         static::created(function ($member) {
-            $membership = $member->membership;
-            if ($membership) {
-                foreach ($membership->activityLimits as $limit) {
-                    MemberActivityBalance::create([
-                        'member_id' => $member->id,
-                        'activity_id' => $limit->activity_id,
-                        'remaining_count' => $limit->max_per_year,
-                        'daily_minutes_limit' => $limit->daily_minutes,
-                        'used_today_minutes' => 0,
-                        'last_used_date' => null
-                    ]);
-                }
+
+            // Load membership + limits safely
+            $membership = $member->membership()->with('activityLimits')->first();
+
+            if (!$membership || $membership->activityLimits->isEmpty()) {
+                return; // No limits → no balances
+            }
+
+            foreach ($membership->activityLimits as $limit) {
+                MemberActivityBalance::create([
+                    'member_id'        => $member->id,
+                    'activity_id'      => $limit->activity_id,
+                    'remaining_count'  => $limit->max_per_year,
+                    'used_today'       => 0,
+                    'last_used_date'   => null,
+                ]);
             }
         });
     }

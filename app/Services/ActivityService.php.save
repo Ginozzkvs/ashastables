@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Member;
+use Exception;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
+
+class ActivityService
+{
+    public static function useActivity($cardId, $activityId, $minutes)
+    {
+        // 🔑 Find member by RFID / NFC UID
+        $member = Member::where('card_uid', $cardId)->firstOrFail();
+
+        // Membership validation
+        if (!$member->active || now()->gt($member->end_date)) {
+            throw new Exception('Membership expired or inactive');
+        }
+
+        // Get activity balance
+        $balance = $member->activityBalances()
+            ->where('activity_id', $activityId)
+            ->first();
+
+        // Create balance if not exists
+        if (!$balance) {
+            $balance = $member->activityBalances()->create([
+                'activity_id' => $activityId,
+                'remaining_count' => 10,
+                'daily_limit' => 60,
+                'used_today' => 0,
+                'last_used_date' => null
+            ]);
+        }
+
+        // Reset daily usage if new day
+        if (
+            is_null($balance->last_used_date) ||
+            $balance->last_used_date !== now()->toDateString()
+        ) {
+            $balance->used_today = 0;
+            $balance->last_used_date = now()->toDateString();
+        } else {
+            throw new Exception('Can only use once per day');
+        }
+
+        // Daily limit check
+        if (
+    $balance->daily_limit !== null &&
+    ($balance->used_today + $minutes) > $balance->daily_limit
+) {
+    throw new Exception('Daily limit exceeded');
+}
+
+
+        // Update balance
+        $balance->used_today += $minutes;
+        $balance->remaining_count -= 1;
+	$balance->last_used_date = now()->toDateString();
+        $balance->save();
+
+	$user = Auth::user();
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => $user?->id,
+    'user_role' => $user?->role ?? 'staff',
+            'member_id' => $member->id,
+            'activity_id' => $activityId,
+            'success' => true,
+            'message' => 'Activity used successfully'
+        ]);
+
+        return 'Activity approved';
+    }
+}

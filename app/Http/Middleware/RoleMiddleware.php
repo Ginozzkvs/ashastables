@@ -13,7 +13,8 @@ class RoleMiddleware
             abort(401);
         }
 
-        if (auth()->user()->role !== $role) {
+        $roles = explode('|', $role);
+        if (!in_array(auth()->user()->role, $roles)) {
             abort(403);
         }
 

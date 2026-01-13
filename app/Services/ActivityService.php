@@ -3,69 +3,75 @@
 namespace App\Services;
 
 use App\Models\Member;
-use Carbon\Carbon;
-use Exception;
+use App\Models\MembershipActivityLimit;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
-
+use Exception;
 
 class ActivityService
 {
-      public static function useActivity($qrCode, $activityId, $minutes)
-      {
-            $member = Member::where('qr_code', $qrCode)->firstOrFail();
+    public static function useActivity($cardUid, $activityId, $minutes = 1)
+    {
+        // 1️⃣ Find member
+        $member = Member::where('card_uid', $cardUid)->firstOrFail();
 
-            if (!$member->active || now()->gt($member->end_date)) {
-                  throw new Exception('Membership expired or inactive');
-            }
+        if (!$member->active || now()->gt($member->end_date)) {
+            throw new Exception('Membership expired or inactive');
+        }
 
-            $balance = $member->activityBalances()
-                  ->where('activity_id', $activityId)
-                  ->first();
+        // 2️⃣ Get activity balance
+        $balance = $member->activityBalances()
+            ->where('activity_id', $activityId)
+            ->first();
 
-            // Create balance if doesn't exist
-            if (!$balance) {
-                  $balance = $member->activityBalances()->create([
-                        'activity_id' => $activityId,
-                        'remaining_count' => 10, // Default limit
-                        'daily_minutes_limit' => 60, // Default daily limit
-                        'used_today_minutes' => 0,
-                        'last_used_date' => null
-                  ]);
-            }
+        if (!$balance) {
+            throw new Exception('No activity balance found');
+        }
 
-            // Reset daily usage if first use or new day
-            if (
-                  is_null($balance->last_used_date) ||
-                  $balance->last_used_date !== now()->toDateString()
-            ) {
-                  $balance->used_today_minutes = 0;
-                  $balance->last_used_date = now()->toDateString();
-            } else {
-                  // Already used today
-                  throw new Exception('Can only use once per day');
-            }
+        // 3️⃣ Get membership limits
+        $limit = MembershipActivityLimit::where('membership_id', $member->membership_id)
+            ->where('activity_id', $activityId)
+            ->first();
 
+        if (!$limit) {
+            throw new Exception('Activity not allowed for this membership');
+        }
 
-            // Daily minutes check
-            if (($balance->used_today_minutes + $minutes) > $balance->daily_minutes_limit) {
-                  throw new Exception('Daily limit exceeded');
-            }
-
-            // Update balance
-            $balance->used_today_minutes += $minutes;
-            $balance->remaining_count -= 1;
+        // 4️⃣ Reset daily usage if new day
+        if ($balance->last_used_date !== now()->toDateString()) {
+            $balance->used_today = 0;
             $balance->last_used_date = now()->toDateString();
-            $balance->save();
+        }
 
-            ActivityLog::create([
-                  'staff_id' => Auth::id(),
-                  'member_id' => $member->id,
-                  'activity_id' => $activityId,
-                  'success' => true,
-                  'message' => 'Activity used successfully'
-            ]);
+        // 5️⃣ Daily limit check
+        if ($limit->max_per_day !== null) {
+            if (($balance->used_today + $minutes) > $limit->max_per_day) {
+                throw new Exception('Daily limit exceeded');
+            }
+        }
 
-            return 'Activity approved';
-      }
+        // 6️⃣ Total remaining check
+        if ($balance->remaining_count <= 0) {
+            throw new Exception('No remaining usage');
+        }
+
+        // 7️⃣ Apply usage
+        $balance->used_today += $minutes;
+        $balance->remaining_count -= 1;
+        $balance->save();
+	
+	$user = auth()->user();
+        // 8️⃣ Log activity (NO timestamps!)
+        ActivityLog::create([
+	    'user_id'     => $user?->id,
+	    'user_role'   => $user?->role ?? 'staff',
+            'member_id'   => $member->id,
+	    'card_uid'    => $cardUid,
+            'activity_id' => $activityId,
+            'success'     => true,
+            'message'     => 'Activity used successfully',
+        ]);
+
+        return true;
+    }
 }

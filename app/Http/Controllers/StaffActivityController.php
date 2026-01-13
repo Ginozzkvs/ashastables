@@ -8,41 +8,51 @@ use App\Services\ActivityService;
 
 class StaffActivityController extends Controller
 {
-    public function index()
+    // Show NFC scan page
+    public function scanPage()
     {
-        return view('staff.activity');
+        return view('staff.scan');
     }
 
+    // AJAX: Find member by card_uid
     public function findMember(Request $request)
     {
-        $member = Member::where('qr_code', $request->qr)->first();
+        $request->validate(['card_uid' => 'required|string']);
+
+        $member = Member::where('card_uid', $request->card_uid)->first();
 
         if (!$member) {
-            return response()->json(['error' => 'Member not found'], 404);
+            return response()->json(['error' => 'Member not found']);
         }
 
-        if (!$member->active || now()->gt($member->end_date)) {
-            return response()->json(['error' => 'Membership expired'], 403);
-        }
+        $activities = $member->activityBalances()->with('activity')->get();
 
         return response()->json([
             'member' => $member,
-            'activities' => $member->activityBalances()->with('activity')->get()
+            'activities' => $activities
         ]);
     }
 
+    // AJAX: Use an activity
     public function useActivity(Request $request)
     {
-        try {
-            ActivityService::useActivity(
-                $request->qr,
-                $request->activity_id,
-                1 // 1 time per click
-            );
+        $request->validate([
+            'card_uid' => 'required|string',
+            'activity_id' => 'required|integer'
+        ]);
 
-            return response()->json(['success' => true]);
+        try {
+            ActivityService::useActivity($request->card_uid, $request->activity_id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Activity used successfully'
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 }

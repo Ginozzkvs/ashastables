@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class MembershipActivityLimit extends Model
 {
-    protected $fillable = ['membership_id', 'activity_id', 'max_per_year', 'daily_minutes'];
+    protected $fillable = [
+        'membership_id',
+        'activity_id',
+        'max_per_year',
+        'max_per_day',
+    ];
 
     public function membership()
     {
