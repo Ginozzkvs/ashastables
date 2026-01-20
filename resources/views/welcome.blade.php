@@ -254,8 +254,8 @@
         <div class="hero-buttons">
             @auth
                 <a href="{{ route('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
-                @if(auth()->user() && auth()->user()->role === 'staff')
-                    <a href="{{ route('staff.scan') }}" class="btn btn-primary">Start Scanning</a>
+                @if(auth()->user() && (auth()->user()->role === 'staff' || auth()->user()->role === 'admin'))
+                    <a href="{{ route('staff.scan') }}" class="btn btn-primary">Staff Scan</a>
                 @endif
             @else
                 <a href="{{ route('login') }}" class="btn btn-secondary">Admin Login</a>
