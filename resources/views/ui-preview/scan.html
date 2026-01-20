@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equestrian Activity Panel</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Cormorant Garamond', serif; letter-spacing: -1px; font-weight: 600; }
+        
+        [x-cloak] { display: none !important; }
+        
+        body {
+            background: #0f1419;
+        }
+        
+        .nfc-panel {
+            border: 1px solid #d4af37;
+            transition: all 0.3s ease;
+            background: #1a1f2e;
+        }
+        
+        .nfc-panel:hover {
+            border-color: #e6c547;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+        }
+        
+        .card-base {
+            background: #1a1f2e;
+            border: 1px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-gold {
+            background: #d4af37;
+            color: #0f1419;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-gold:hover {
+            background: #e6c547;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+        }
+        
+        .btn-outline {
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            background: transparent;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .nfc-input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4 sm:p-8" 
+      x-data="scanComponent()" 
+      x-init="$nextTick(() => $refs.nfc.focus())">
+
+    <!-- HEADER WITH LOGO -->
+    <div class="max-w-2xl mx-auto mb-12">
+        <div class="text-center mb-8">
+            <!-- GEOMETRIC TENT LOGO -->
+            <svg class="w-20 h-20 mx-auto mb-4" viewBox="0 0 100 100" fill="none">
+                <!-- Outer Triangle -->
+                <path d="M50 10 L10 90 L90 90 Z" stroke="#d4af37" stroke-width="2.5" fill="none"/>
+                <!-- Inner Triangle -->
+                <path d="M50 30 L25 80 L75 80 Z" stroke="#d4af37" stroke-width="2.5" fill="none"/>
+                <!-- Center Line -->
+                <line x1="50" y1="10" x2="50" y2="90" stroke="#d4af37" stroke-width="2"/>
+                <!-- Decorative Curves -->
+                <path d="M20 70 Q15 75 20 80" stroke="#d4af37" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <path d="M80 70 Q85 75 80 80" stroke="#d4af37" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+        </div>
+        
+        <div class="border-b border-yellow-600 pb-8 text-center">
+            <h1 class="text-5xl font-bold text-white mb-3" style="letter-spacing: -2px;">ASHA</h1>
+            <p class="text-gray-300 text-sm font-semibold tracking-widest mb-1">EQUESTRIAN RESORT</p>
+            <p class="text-gray-500 text-xs font-medium tracking-widest">MEMBER ACTIVITY MANAGEMENT</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="max-w-2xl mx-auto space-y-6">
+
+        <!-- NFC SCAN PANEL -->
+        <div class="nfc-panel rounded-none p-12 cursor-pointer" @click="$refs.nfc.focus()">
+            <div class="text-center">
+                <!-- TENT ICON -->
+                <svg class="w-14 h-14 mx-auto mb-6" viewBox="0 0 100 100" fill="none">
+                    <path d="M50 20 L20 80 L80 80 Z" stroke="#d4af37" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+                    <line x1="50" y1="20" x2="50" y2="80" stroke="#d4af37" stroke-width="2"/>
+                    <path d="M32 65 Q28 70 32 75" stroke="#d4af37" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <path d="M68 65 Q72 70 68 75" stroke="#d4af37" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                
+                <h3 class="text-2xl font-bold text-white mb-3 tracking-tight">SCAN MEMBER CARD</h3>
+                
+                <div x-show="!card_uid">
+                    <p class="text-gray-400 text-xs font-semibold">READY TO AUTHENTICATE</p>
+                </div>
+                
+                <div x-show="card_uid" class="mt-6">
+                    <p class="text-xs uppercase tracking-widest text-gray-500 mb-3" style="color: #d4af37;">Card UID</p>
+                    <p class="text-sm font-mono" style="color: #d4af37; letter-spacing: 2px;" x-text="card_uid"></p>
+                </div>
+            </div>
+
+            <input
+                x-ref="nfc"
+                x-model="card_uid"
+                @input="onScanInput"
+                type="text"
+                autocomplete="off"
+                title="NFC card scanner input"
+                class="nfc-input"
+            >
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        <template x-if="error">
+            <div class="border rounded-none p-4" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+                <p class="text-red-400 text-sm font-semibold" x-text="error"></p>
+            </div>
+        </template>
+
+        <!-- MEMBER INFO -->
+        <template x-if="member">
+            <div class="card-base rounded-none p-8">
+                <div class="flex items-start justify-between mb-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest font-bold mb-2" style="color: #d4af37;">Member</p>
+                        <h3 class="text-3xl font-bold text-white" style="letter-spacing: -1px;" x-text="member.name"></h3>
+                        <p class="text-gray-500 text-xs mt-2 font-mono" x-text="member.id"></p>
+                    </div>
+                    <div class="w-12 h-12 border flex items-center justify-center" style="border-color: #d4af37; background: rgba(212, 175, 55, 0.05);">
+                        <svg class="w-6 h-6" style="color: #d4af37;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6 pt-6 border-t" style="border-color: #d4af37;">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest font-bold mb-1" style="color: #d4af37;">Valid Until</p>
+                        <p class="text-sm text-gray-300" x-text="member.end_date"></p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-widest font-bold mb-1" style="color: #d4af37;">Status</p>
+                        <p class="text-sm font-bold text-green-400">ACTIVE</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ACTIVITIES LIST -->
+        <template x-if="activities.length > 0">
+            <div>
+                <p class="text-xs uppercase tracking-widest font-bold mb-6" style="color: #d4af37;">Available Sessions</p>
+                
+                <template x-for="a in activities" :key="a.id">
+                    <div class="card-base rounded-none p-8 hover:shadow-lg transition-shadow">
+                        <div class="flex items-start justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-white" x-text="a.activity.name"></h3>
+                                <p class="text-xs font-mono text-gray-500 mt-1" x-text="'ID: ' + a.activity.id"></p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 mb-8 pb-6" style="border-bottom: 1px solid #d4af37;">
+                            <div>
+                                <p class="text-xs uppercase tracking-widest font-bold mb-2" style="color: #d4af37;">Used</p>
+                                <p class="text-2xl font-bold text-gray-300" x-text="a.used_count || 0"></p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase tracking-widest font-bold mb-2" style="color: #d4af37;">Remaining</p>
+                                <p class="text-2xl font-bold" 
+                                   :class="Number(a.remaining_count) > 0 ? 'text-green-400' : 'text-red-400'"
+                                   x-text="a.remaining_count"></p>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase tracking-widest font-bold mb-2" style="color: #d4af37;">Total</p>
+                                <p class="text-2xl font-bold text-gray-300" x-text="Number(a.remaining_count) + (a.used_count || 0)"></p>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-6">
+                            <div class="w-full h-1" style="background: rgba(212, 175, 55, 0.2);">
+                                <div class="h-1 transition-all" style="background: #d4af37;"
+                                     :style="'width: ' + ((a.used_count || 0) / ((a.used_count || 0) + Number(a.remaining_count)) * 100) + '%'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RESERVE BUTTON -->
+                        <button
+                            :disabled="Number(a.remaining_count) <= 0"
+                            @click="openConfirm(a.activity.id, a.activity.name)"
+                            class="w-full py-3 px-6 rounded-none text-sm uppercase tracking-wider transition font-bold"
+                            :class="Number(a.remaining_count) > 0 ? 'btn-gold' : 'opacity-50 cursor-not-allowed'"
+                            :style="Number(a.remaining_count) <= 0 ? 'background: rgba(212, 175, 55, 0.3); color: #666;' : ''"
+                        >
+                            <span x-show="Number(a.remaining_count) > 0">Reserve Session</span>
+                            <span x-show="Number(a.remaining_count) <= 0">Fully Booked</span>
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- EMPTY STATE -->
+        <template x-if="!member && !error && card_uid">
+            <div class="card-base rounded-none p-8 text-center">
+                <p class="text-gray-400 text-xs font-semibold tracking-widest">AUTHENTICATING MEMBER...</p>
+            </div>
+        </template>
+
+    </div>
+
+    <!-- MODAL BACKDROP -->
+    <div x-show="modal.show" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="card-base rounded-none shadow-2xl max-w-sm w-full p-8" @click.stop>
+
+            <!-- CONFIRM MODAL -->
+            <template x-if="modal.type === 'confirm'">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2 tracking-tight">CONFIRM</h3>
+                    <p class="text-gray-300 text-sm font-medium mb-8" x-text="modal.message"></p>
+
+                    <div class="flex gap-4">
+                        <button @click="closeModal()" class="flex-1 px-6 py-3 rounded-none text-sm uppercase tracking-wider transition btn-outline">
+                            Cancel
+                        </button>
+                        <button @click="confirmUse()" class="flex-1 px-6 py-3 rounded-none text-sm uppercase tracking-wider transition btn-gold">
+                            Confirm
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- SUCCESS MODAL -->
+            <template x-if="modal.type === 'success'">
+                <div class="text-center">
+                    <div class="w-12 h-12 flex items-center justify-center mx-auto mb-4 border" style="border-color: #10b981;">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 tracking-tight" style="color: #10b981;">SESSION RESERVED</h3>
+                    <p class="text-gray-300 text-sm font-medium" x-text="modal.message"></p>
+                </div>
+            </template>
+
+            <!-- ERROR MODAL -->
+            <template x-if="modal.type === 'error'">
+                <div class="text-center">
+                    <div class="w-12 h-12 flex items-center justify-center mx-auto mb-4 border" style="border-color: #ef4444;">
+                        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 tracking-tight" style="color: #ef4444;">ERROR</h3>
+                    <p class="text-gray-300 text-sm font-medium" x-text="modal.message"></p>
+                </div>
+            </template>
+
+        </div>
+    </div>
+
+</body>
+
+<script>
+function scanComponent() {
+    return {
+        card_uid: '',
+        member: null,
+        activities: [],
+        error: null,
+        scanTimer: null,
+        scanLocked: false,
+
+        memberDatabase: {
+            'NFC000001': { id: 'MEM-001', name: 'John Smith', end_date: '2025-06-30' },
+            'NFC000002': { id: 'MEM-002', name: 'Sarah Johnson', end_date: '2025-08-15' },
+            'NFC000003': { id: 'MEM-003', name: 'Mike Davis', end_date: '2025-05-20' }
+        },
+
+        activitiesDatabase: {
+            'MEM-001': [
+                { id: 1, activity: { id: 101, name: 'Horse Riding' }, used_count: 3, remaining_count: 7 },
+                { id: 2, activity: { id: 102, name: 'Grooming & Care' }, used_count: 5, remaining_count: 5 },
+                { id: 3, activity: { id: 103, name: 'Training Session' }, used_count: 2, remaining_count: 8 }
+            ],
+            'MEM-002': [
+                { id: 4, activity: { id: 104, name: 'Therapy Sessions' }, used_count: 8, remaining_count: 2 },
+                { id: 5, activity: { id: 102, name: 'Grooming & Care' }, used_count: 4, remaining_count: 6 }
+            ],
+            'MEM-003': [
+                { id: 6, activity: { id: 101, name: 'Horse Riding' }, used_count: 0, remaining_count: 0 },
+                { id: 7, activity: { id: 103, name: 'Training Session' }, used_count: 1, remaining_count: 9 }
+            ]
+        },
+
+        modal: { show: false, type: 'confirm', message: '', activityId: null, activityName: '' },
+
+        onScanInput() {
+            if (this.scanLocked) return
+            clearTimeout(this.scanTimer)
+            this.scanTimer = setTimeout(() => {
+                if (this.card_uid.length >= 4) {
+                    this.scanLocked = true
+                    this.loadMember()
+                }
+            }, 250)
+        },
+
+        loadMember() {
+            setTimeout(() => {
+                const member = this.memberDatabase[this.card_uid]
+                if (member) {
+                    this.error = null
+                    this.member = member
+                    this.activities = this.activitiesDatabase[member.id] || []
+                } else {
+                    this.error = `Card not found: ${this.card_uid}`
+                    this.member = null
+                    this.activities = []
+                    setTimeout(() => this.reset(), 2000)
+                }
+            }, 500)
+        },
+
+        openConfirm(activityId, activityName) {
+            this.modal = {
+                show: true,
+                type: 'confirm',
+                message: `Reserve "${activityName}"?`,
+                activityId,
+                activityName
+            }
+        },
+
+        closeModal() {
+            this.modal.show = false
+        },
+
+        confirmUse() {
+            const activity = this.activities.find(a => a.activity.id === this.modal.activityId)
+            if (!activity || Number(activity.remaining_count) <= 0) {
+                this.modal.type = 'error'
+                this.modal.message = 'No sessions remaining!'
+                setTimeout(() => this.reset(), 1500)
+                return
+            }
+            setTimeout(() => {
+                activity.remaining_count = Number(activity.remaining_count) - 1
+                activity.used_count = (activity.used_count || 0) + 1
+                this.modal.type = 'success'
+                this.modal.message = `Session reserved! ${activity.remaining_count} remaining.`
+                setTimeout(() => this.reset(), 1500)
+            }, 500)
+        },
+
+        reset() {
+            this.modal.show = false
+            this.card_uid = ''
+            this.member = null
+            this.activities = []
+            this.error = null
+            this.scanLocked = false
+            this.$nextTick(() => { if (this.$refs.nfc) this.$refs.nfc.focus() })
+        }
+    }
+}
+</script>
+
+</html>

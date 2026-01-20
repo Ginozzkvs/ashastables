@@ -15,7 +15,7 @@ class ActivityService
         // 1️⃣ Find member
         $member = Member::where('card_uid', $cardUid)->firstOrFail();
 
-        if (!$member->active || now()->gt($member->end_date)) {
+        if (!$member->active || ($member->expiry_date && now()->gt($member->expiry_date))) {
             throw new Exception('Membership expired or inactive');
         }
 
@@ -60,18 +60,18 @@ class ActivityService
         $balance->remaining_count -= 1;
         $balance->save();
 	
-	$user = auth()->user();
-        // 8️⃣ Log activity (NO timestamps!)
-        ActivityLog::create([
+        $user = auth()->user();
+        // 8️⃣ Log activity
+        $activityLog = ActivityLog::create([
 	    'user_id'     => $user?->id,
 	    'user_role'   => $user?->role ?? 'staff',
-            'member_id'   => $member->id,
+            'member_id'   => $member->card_id,
 	    'card_uid'    => $cardUid,
             'activity_id' => $activityId,
             'success'     => true,
             'message'     => 'Activity used successfully',
         ]);
 
-        return true;
+        return $activityLog;
     }
 }

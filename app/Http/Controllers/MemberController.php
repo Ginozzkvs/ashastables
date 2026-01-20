@@ -35,15 +35,16 @@ class MemberController extends Controller
     $membership = Membership::findOrFail($request->membership_id);
 
     $startDate = now()->toDateString();
-    $endDate = now()->addDays($membership->duration_days)->toDateString();
+    $expiryDate = now()->addDays($membership->duration_days)->toDateString();
 
     Member::create([
+        'card_id' => Member::generateCardId(),
         'name' => $request->name,
         'phone' => $request->phone,
         'membership_id' => $membership->id,
         'start_date' => now(),
-        'end_date' => now()->addDays($membership->duration_days),
-	'card_uid' => $request->card_uid, // RFID / NFC UID
+        'expiry_date' => now()->addDays($membership->duration_days),
+        'card_uid' => $request->card_uid,
         'active' => 1,
     ]);
 
@@ -61,16 +62,24 @@ class MemberController extends Controller
     // Update member
    public function update(Request $request, Member $member)
 {
-    $validated = $request->validate([
+    $rules = [
         'name' => 'required|string|max:255',
         'phone' => 'nullable|string|max:255',
         'email' => 'nullable|email|max:255',
-        'card_uid' => 'nullable|string|max:255|unique:members,card_uid,' . $member->id,
         'membership_id' => 'required|exists:memberships,id',
         'start_date' => 'required|date',
-        'end_date' => 'required|date|after_or_equal:start_date',
+        'expiry_date' => 'required|date|after_or_equal:start_date',
         'active' => 'nullable|boolean',
-    ]);
+    ];
+    
+    // Only validate uniqueness for card_uid if it's being changed
+    if ($request->filled('card_uid') && $request->card_uid !== $member->card_uid) {
+        $rules['card_uid'] = 'nullable|string|max:255|unique:members,card_uid,' . $member->card_id . ',card_id';
+    } else {
+        $rules['card_uid'] = 'nullable|string|max:255';
+    }
+    
+    $validated = $request->validate($rules);
 
     $member->update([
         'name' => $validated['name'],
@@ -79,7 +88,7 @@ class MemberController extends Controller
         'card_uid' => $validated['card_uid'] ?? null,
         'membership_id' => $validated['membership_id'],
         'start_date' => $validated['start_date'],
-        'end_date' => $validated['end_date'],
+        'expiry_date' => $validated['expiry_date'],
         'active' => $request->has('active'), // ✅ correct checkbox handling
     ]);
 

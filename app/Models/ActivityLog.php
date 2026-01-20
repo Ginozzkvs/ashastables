@@ -20,11 +20,11 @@ class ActivityLog extends Model
     ];
 
     public function staff() {
-        return $this->belongsTo(User::class, 'staff_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function member() {
-        return $this->belongsTo(Member::class);
+        return $this->belongsTo(Member::class, 'member_id', 'card_id');
     }
 
     public function activity() {

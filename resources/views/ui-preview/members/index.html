@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members - ASHA Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: -1px;
+            font-weight: 600;
+        }
+        
+        body {
+            background: #0f1419;
+            color: #d1d5db;
+        }
+        
+        .header-divider {
+            border-color: #d4af37;
+        }
+        
+        /* CARDS */
+        .card-base {
+            background: #1a1f2e;
+            border: 1px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .card-base:hover {
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
+        }
+        
+        /* TABLE STYLING */
+        .table-wrapper {
+            background: #1a1f2e;
+            border: 1px solid #d4af37;
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table thead {
+            background: rgba(212, 175, 55, 0.05);
+            border-bottom: 2px solid #d4af37;
+        }
+        
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #d4af37;
+            text-transform: uppercase;
+        }
+        
+        .data-table tbody tr {
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .data-table tbody tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .data-table td {
+            padding: 1rem;
+            color: #d1d5db;
+            font-size: 0.875rem;
+        }
+        
+        /* STATUS BADGES */
+        .status-active {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid #10b981;
+        }
+        
+        .status-inactive {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid #ef4444;
+        }
+        
+        /* BUTTONS */
+        .btn-gold {
+            background: #d4af37;
+            color: #0f1419;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-gold:hover {
+            background: #e6c547;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+        }
+        
+        .btn-small {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        
+        .action-link {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-link:hover {
+            color: #e6c547;
+        }
+        
+        .action-link-danger {
+            color: #ef4444;
+        }
+        
+        .action-link-danger:hover {
+            color: #f87171;
+        }
+        
+        /* PAGE HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .page-header h1 {
+            color: #fff;
+            font-size: 2rem;
+            margin: 0;
+        }
+        
+        .page-header-subtext {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* LOGO / HEADER ICON */
+        .logo-triangle {
+            width: 40px;
+            height: 40px;
+        }
+        
+        /* SUCCESS MESSAGE */
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+        }
+        
+        .empty-state p {
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 sm:p-8">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- PAGE HEADER WITH ACTIONS -->
+            <div class="page-header">
+                <div>
+                    <h1>Members Directory</h1>
+                    <p class="page-header-subtext">Manage and oversee all resort members</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-gold btn-small">+ Add Member</button>
+                </div>
+            </div>
+
+            <!-- SUCCESS MESSAGE (CONDITIONAL) -->
+            <div class="alert-success" style="display: none;">
+                Member successfully created. Welcome to ASHA Resort!
+            </div>
+
+            <!-- MEMBERS TABLE CARD -->
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">ID</th>
+                            <th style="width: 18%;">Name</th>
+                            <th style="width: 18%;">Email</th>
+                            <th style="width: 15%;">Phone</th>
+                            <th style="width: 15%;">Membership</th>
+                            <th style="width: 14%;">Period</th>
+                            <th style="width: 8%; text-align: center;">Status</th>
+                            <th style="width: 12%; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Member Row 1 -->
+                        <tr>
+                            <td>#1247</td>
+                            <td>Alexandra Sterling</td>
+                            <td>alexandra.sterling@email.com</td>
+                            <td>+1 (555) 201-3847</td>
+                            <td>Premium Annual</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">Jan 15, 2025</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ Jan 15, 2026</span>
+                            </td>
+                            <td style="text-align: center;"><span class="status-active">Active</span></td>
+                            <td style="text-align: center;">
+                                <a href="#" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <a href="#" class="action-link action-link-danger">Delete</a>
+                            </td>
+                        </tr>
+
+                        <!-- Member Row 2 -->
+                        <tr>
+                            <td>#1248</td>
+                            <td>Christopher Blake</td>
+                            <td>christopher.blake@email.com</td>
+                            <td>+1 (555) 234-5678</td>
+                            <td>Standard Annual</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">Mar 01, 2025</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ Mar 01, 2026</span>
+                            </td>
+                            <td style="text-align: center;"><span class="status-active">Active</span></td>
+                            <td style="text-align: center;">
+                                <a href="#" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <a href="#" class="action-link action-link-danger">Delete</a>
+                            </td>
+                        </tr>
+
+                        <!-- Member Row 3 -->
+                        <tr>
+                            <td>#1249</td>
+                            <td>Victoria Ashford</td>
+                            <td>victoria.ashford@email.com</td>
+                            <td>+1 (555) 345-6789</td>
+                            <td>Equestrian Elite</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">Feb 10, 2025</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ Feb 10, 2026</span>
+                            </td>
+                            <td style="text-align: center;"><span class="status-active">Active</span></td>
+                            <td style="text-align: center;">
+                                <a href="#" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <a href="#" class="action-link action-link-danger">Delete</a>
+                            </td>
+                        </tr>
+
+                        <!-- Member Row 4 -->
+                        <tr>
+                            <td>#1250</td>
+                            <td>Marcus Wellington</td>
+                            <td>marcus.wellington@email.com</td>
+                            <td>+1 (555) 456-7890</td>
+                            <td>Premium Annual</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">Dec 20, 2024</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ Dec 20, 2025</span>
+                            </td>
+                            <td style="text-align: center;"><span class="status-inactive">Inactive</span></td>
+                            <td style="text-align: center;">
+                                <a href="#" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <a href="#" class="action-link action-link-danger">Delete</a>
+                            </td>
+                        </tr>
+
+                        <!-- Member Row 5 -->
+                        <tr>
+                            <td>#1251</td>
+                            <td>Sophia Hartley</td>
+                            <td>sophia.hartley@email.com</td>
+                            <td>+1 (555) 567-8901</td>
+                            <td>Standard Annual</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">May 05, 2025</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ May 05, 2026</span>
+                            </td>
+                            <td style="text-align: center;"><span class="status-active">Active</span></td>
+                            <td style="text-align: center;">
+                                <a href="#" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <a href="#" class="action-link action-link-danger">Delete</a>
+                            </td>
+                        </tr>
+
+                        <!-- Member Row 6 -->
+                        <tr>
+                            <td>#1252</td>
+                            <td>Nathaniel Cross</td>
+                            <td>nathaniel.cross@email.com</td>
+                            <td>+1 (555) 678-9012</td>
+                            <td>Guest Pass</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">Jan 10, 2026</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ Jan 17, 2026</span>
+                            </td>
+                            <td style="text-align: center;"><span class="status-active">Active</span></td>
+                            <td style="text-align: center;">
+                                <a href="#" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <a href="#" class="action-link action-link-danger">Delete</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MEMBERS SUMMARY FOOTER -->
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(212, 175, 55, 0.2); color: #9ca3af; font-size: 0.875rem;">
+                <p>Displaying 6 members · 5 Active · 1 Inactive</p>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

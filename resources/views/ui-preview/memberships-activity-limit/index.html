@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memberships - ASHA Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: -1px;
+            font-weight: 600;
+        }
+        
+        body {
+            background: #0f1419;
+            color: #d1d5db;
+        }
+        
+        .header-divider {
+            border-color: #d4af37;
+        }
+        
+        /* CARDS */
+        .card-base {
+            background: #1a1f2e;
+            border: 1px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .card-base:hover {
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
+        }
+        
+        /* PAGE HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .page-header h1 {
+            color: #fff;
+            font-size: 2rem;
+            margin: 0;
+        }
+        
+        .page-header-subtext {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        /* BUTTONS */
+        .btn-gold {
+            background: #d4af37;
+            color: #0f1419;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.875rem 2rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-gold:hover {
+            background: #e6c547;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+        }
+        
+        .btn-small {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        
+        /* SUCCESS ALERT */
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        /* TABLE STYLES */
+        .table-wrapper {
+            background: #1a1f2e;
+            border: 1px solid #d4af37;
+            overflow: hidden;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table thead tr {
+            background: rgba(212, 175, 55, 0.08);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .data-table th {
+            padding: 1.25rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #d4af37;
+            text-transform: uppercase;
+        }
+        
+        .data-table td {
+            padding: 1.25rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            color: #d1d5db;
+            font-size: 0.875rem;
+        }
+        
+        .data-table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .data-table tbody tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* MEMBERSHIP BADGE */
+        .membership-type {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .price-label {
+            color: #d4af37;
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+        
+        .duration-info {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .duration-info span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(212, 175, 55, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            font-size: 0.75rem;
+            color: #d1d5db;
+        }
+        
+        /* ACTION LINKS */
+        .action-link {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-link:hover {
+            color: #e6c547;
+        }
+        
+        .action-link-danger {
+            color: #ef4444;
+            border: none;
+            background: none;
+            padding: 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-link-danger:hover {
+            color: #f87171;
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        /* STATS FOOTER */
+        .table-footer {
+            background: rgba(212, 175, 55, 0.05);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-value {
+            color: #d4af37;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 sm:p-8" style="background: #0f1419;">
+        <div class="max-w-7xl mx-auto">
+
+            <!-- PAGE HEADER WITH ACTIONS -->
+            <div class="page-header">
+                <div>
+                    <h1>Memberships</h1>
+                    <p class="page-header-subtext">Manage and configure membership tiers and pricing</p>
+                </div>
+                <div class="header-actions">
+                    <a href="create.html" class="btn-gold btn-small">+ Add Membership</a>
+                </div>
+            </div>
+
+            <!-- SUCCESS MESSAGE (CONDITIONAL) -->
+            <div class="alert-success" style="display: none;">
+                Membership updated successfully
+            </div>
+
+            <!-- MEMBERSHIPS TABLE CARD -->
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">ID</th>
+                            <th style="width: 25%;">Membership Type</th>
+                            <th style="width: 15%;">Price</th>
+                            <th style="width: 18%;">Duration</th>
+                            <th style="width: 15%;">Members</th>
+                            <th style="width: 22%; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Premium Annual -->
+                        <tr>
+                            <td>#1</td>
+                            <td>
+                                <span class="membership-type">Premium Annual</span>
+                            </td>
+                            <td>
+                                <span class="price-label">$12,500</span>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">per year</div>
+                            </td>
+                            <td>
+                                <div class="duration-info">
+                                    <span>365 days</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 0.5rem 0.75rem; border-radius: 0; display: inline-block; font-weight: 600; font-size: 0.875rem;">8 members</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="edit.html" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <button onclick="return confirm('Delete this membership?')" class="action-link-danger">Delete</button>
+                            </td>
+                        </tr>
+
+                        <!-- Standard Annual -->
+                        <tr>
+                            <td>#2</td>
+                            <td>
+                                <span class="membership-type">Standard Annual</span>
+                            </td>
+                            <td>
+                                <span class="price-label">$7,500</span>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">per year</div>
+                            </td>
+                            <td>
+                                <div class="duration-info">
+                                    <span>365 days</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 0.5rem 0.75rem; border-radius: 0; display: inline-block; font-weight: 600; font-size: 0.875rem;">12 members</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="edit.html" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <button onclick="return confirm('Delete this membership?')" class="action-link-danger">Delete</button>
+                            </td>
+                        </tr>
+
+                        <!-- Equestrian Elite -->
+                        <tr>
+                            <td>#3</td>
+                            <td>
+                                <span class="membership-type">Equestrian Elite</span>
+                            </td>
+                            <td>
+                                <span class="price-label">$18,000</span>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">per year</div>
+                            </td>
+                            <td>
+                                <div class="duration-info">
+                                    <span>365 days</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 0.5rem 0.75rem; border-radius: 0; display: inline-block; font-weight: 600; font-size: 0.875rem;">5 members</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="edit.html" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <button onclick="return confirm('Delete this membership?')" class="action-link-danger">Delete</button>
+                            </td>
+                        </tr>
+
+                        <!-- Guest Pass -->
+                        <tr>
+                            <td>#4</td>
+                            <td>
+                                <span class="membership-type">Guest Pass</span>
+                            </td>
+                            <td>
+                                <span class="price-label">$250</span>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">per week</div>
+                            </td>
+                            <td>
+                                <div class="duration-info">
+                                    <span>7 days</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 0.5rem 0.75rem; border-radius: 0; display: inline-block; font-weight: 600; font-size: 0.875rem;">3 members</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="edit.html" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <button onclick="return confirm('Delete this membership?')" class="action-link-danger">Delete</button>
+                            </td>
+                        </tr>
+
+                        <!-- Seasonal Pass -->
+                        <tr>
+                            <td>#5</td>
+                            <td>
+                                <span class="membership-type">Seasonal Pass</span>
+                            </td>
+                            <td>
+                                <span class="price-label">$4,200</span>
+                                <div style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">per season</div>
+                            </td>
+                            <td>
+                                <div class="duration-info">
+                                    <span>90 days</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 0.5rem 0.75rem; border-radius: 0; display: inline-block; font-weight: 600; font-size: 0.875rem;">6 members</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="edit.html" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <button onclick="return confirm('Delete this membership?')" class="action-link-danger">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- TABLE FOOTER STATS -->
+                <div class="table-footer">
+                    <div class="stat">
+                        <span class="stat-label">Total Memberships</span>
+                        <span class="stat-value">5</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Active Members</span>
+                        <span class="stat-value">34</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Annual Revenue</span>
+                        <span class="stat-value">$143,200</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
+
+                <td class="border p-2 text-center space-x-2">
+                    <a href="{{ route('membership-activity-limits.edit', $limit) }}"
+                       class="text-blue-600">
+                        Edit
+                    </a>
+
+                    <form action="{{ route('membership-activity-limits.destroy', $limit) }}"
+                          method="POST"
+                          class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" onclick="return confirm('Delete this limit?')"
+                                class="text-red-600">
+                            Delete
+                        </button>
+

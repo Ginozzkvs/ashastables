@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Activity - ASHA Resort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: -1px;
+            font-weight: 600;
+        }
+        
+        body {
+            background: #0f1419;
+            color: #d1d5db;
+        }
+        
+        .header-divider {
+            border-color: #d4af37;
+        }
+        
+        /* CARDS */
+        .card-base {
+            background: #1a1f2e;
+            border: 1px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .card-base:hover {
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
+        }
+        
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #d4af37;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-input,
+        .form-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #d4af37;
+            color: #fff;
+            padding: 0.875rem 1rem;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #e6c547;
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.15);
+        }
+        
+        .form-input::placeholder {
+            color: #6b7280;
+        }
+        
+        .form-select option {
+            background: #1a1f2e;
+            color: #fff;
+        }
+        
+        /* BUTTONS */
+        .btn-gold {
+            background: #d4af37;
+            color: #0f1419;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.875rem 2rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-gold:hover {
+            background: #e6c547;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+        }
+        
+        .btn-outline {
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            background: transparent;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.875rem 2rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* FORM ACTIONS */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .form-actions a {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* HELP TEXT */
+        .help-text {
+            color: #6b7280;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* LOGO / HEADER */
+        .logo-triangle {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .page-header h1 {
+            color: #fff;
+            font-size: 2.25rem;
+            margin-top: 1rem;
+        }
+        
+        .page-header .tagline {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .page-header-divider {
+            width: 48px;
+            height: 1px;
+            background: #d4af37;
+            margin: 1.5rem auto 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 sm:p-8">
+        <div class="max-w-2xl mx-auto">
+            
+            <!-- PAGE HEADER -->
+            <div class="page-header">
+                <!-- Geometric Tent Logo -->
+                <svg class="logo-triangle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="none" stroke="#d4af37" stroke-width="2">
+                        <!-- Main triangle -->
+                        <path d="M 50 10 L 90 85 L 10 85 Z" stroke="#d4af37" fill="none"/>
+                        <!-- Inner detail -->
+                        <line x1="50" y1="10" x2="50" y2="85" stroke="#d4af37" stroke-width="1.5" opacity="0.6"/>
+                        <!-- Base accent -->
+                        <line x1="10" y1="85" x2="90" y2="85" stroke="#d4af37" stroke-width="2"/>
+                    </g>
+                </svg>
+                
+                <h1>New Activity</h1>
+                <p class="tagline">Create a new program for member engagement</p>
+                <div class="page-header-divider"></div>
+            </div>
+
+            <!-- CREATE FORM CARD -->
+            <div class="card-base rounded-none p-8">
+                
+                <form>
+                    
+                    <!-- Activity Name Field -->
+                    <div class="form-group">
+                        <label class="form-label">Activity Name</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            placeholder="e.g., Dressage Training, Trail Ride, Jumping Lesson"
+                            class="form-input"
+                            required>
+                        <p class="help-text">The official name of this equestrian program</p>
+                    </div>
+
+                    <!-- Unit Selection Field -->
+                    <div class="form-group">
+                        <label for="unit" class="form-label">Session Unit</label>
+                        <select id="unit" name="unit" class="form-select" required>
+                            <option value="">Select unit type...</option>
+                            <option value="minutes">Minutes</option>
+                            <option value="times">Times</option>
+                        </select>
+                        <p class="help-text">How sessions are counted for this activity (duration in minutes or frequency in times)</p>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-gold">Create Activity</button>
+                        <a href="index.html" class="btn-outline">Cancel</a>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- TIPS SECTION -->
+            <div class="mt-12 pt-8 border-t header-divider">
+                <p class="text-xs uppercase tracking-widest font-bold mb-6" style="color: #d4af37;">Creation Tips</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    
+                    <!-- Tip 1 -->
+                    <div style="background: rgba(212, 175, 55, 0.05); border-left: 2px solid #d4af37; padding: 1.5rem;">
+                        <p style="color: #d4af37; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Descriptive Names</p>
+                        <p style="color: #9ca3af; font-size: 0.875rem; line-height: 1.6;">Use clear, specific activity names that members will instantly recognize and understand.</p>
+                    </div>
+
+                    <!-- Tip 2 -->
+                    <div style="background: rgba(212, 175, 55, 0.05); border-left: 2px solid #d4af37; padding: 1.5rem;">
+                        <p style="color: #d4af37; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Unit Selection</p>
+                        <p style="color: #9ca3af; font-size: 0.875rem; line-height: 1.6;">Choose "Minutes" for time-based activities or "Times" for frequency-based bookings.</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

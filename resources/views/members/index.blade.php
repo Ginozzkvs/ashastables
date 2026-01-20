@@ -1,94 +1,271 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto py-8">
-   <div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">
-        Staff Scan
-    </h1>
+<style>
+    * { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Cormorant Garamond', serif; letter-spacing: -1px; font-weight: 600; }
+    
+    body {
+        background: #0f1419;
+    }
+    
+    .header-divider {
+        border-color: #d4af37;
+    }
+    
+    .card-base {
+        background: #1a1f2e;
+        border: 1px solid #d4af37;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .card-base:hover {
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.1);
+    }
+    
+    .table-wrapper {
+        background: #1a1f2e;
+        border: 1px solid #d4af37;
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table thead {
+        background: rgba(212, 175, 55, 0.05);
+        border-bottom: 2px solid #d4af37;
+    }
+    
+    .data-table th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: #d4af37;
+        text-transform: uppercase;
+    }
+    
+    .data-table tbody tr {
+        border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .data-table tbody tr:hover {
+        background: rgba(212, 175, 55, 0.05);
+    }
+    
+    .data-table td {
+        padding: 1rem;
+        color: #d1d5db;
+        font-size: 0.875rem;
+    }
+    
+    .status-active {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 1px solid #10b981;
+    }
+    
+    .status-inactive {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: 1px solid #ef4444;
+    }
+    
+    .btn-gold {
+        background: #d4af37;
+        color: #0f1419;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+    
+    .btn-gold:hover {
+        background: #e6c547;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(212, 175, 55, 0.2);
+    }
+    
+    .btn-small {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .action-link {
+        color: #d4af37;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .action-link:hover {
+        color: #e6c547;
+    }
+    
+    .action-link-danger {
+        color: #ef4444;
+        border: none;
+        background: none;
+        padding: 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .action-link-danger:hover {
+        color: #f87171;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    
+    .page-header h1 {
+        color: #fff;
+        font-size: 2rem;
+        margin: 0;
+    }
+    
+    .page-header-subtext {
+        color: #9ca3af;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .alert-success {
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid #10b981;
+        color: #10b981;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+</style>
 
-        <a href="{{ route('members.create') }}"
-           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            + Add Member
-        </a>
-    </div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 rounded">
-            {{ session('success') }}
+<div class="min-h-screen p-4 sm:p-8" style="background: #0f1419;">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- PAGE HEADER WITH ACTIONS -->
+        <div class="page-header">
+            <div>
+                <h1>Members Directory</h1>
+                <p class="page-header-subtext">Manage and oversee all resort members</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ route('members.create') }}" class="btn-gold btn-small">+ Add Member</a>
+            </div>
         </div>
-    @endif
 
-    <div class="bg-white shadow rounded overflow-hidden">
-        <table class="w-full border-collapse">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="p-3 text-left">ID</th>
-                    <th class="p-3 text-left">Name</th>
-                    <th class="p-3 text-left">Email</th>
-                    <th class="p-3 text-left">Phone</th>
-                    <th class="p-3 text-left">Membership</th>
-                    <th class="p-3 text-left">Period</th>
-                    <th class="p-3 text-center">Status</th>
-                    <th class="p-3 text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($members as $member)
-                    <tr class="border-t">
-                        <td class="p-3">{{ $member->id }}</td>
-                        <td class="p-3 font-medium">{{ $member->name }}</td>
-                        <td class="p-3">{{ $member->email }}</td>
-                        <td class="p-3">{{ $member->phone }}</td>
+        <!-- SUCCESS MESSAGE (CONDITIONAL) -->
+        @if(session('success'))
+            <div class="alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
 
-                        <td class="p-3">
-                            {{ optional($member->membership)->name ?? '-' }}
-                        </td>
-
-                        <td class="p-3 text-sm text-gray-600">
-                            {{ $member->start_date }} <br>
-                            → {{ $member->end_date }}
-                        </td>
-
-                        <td class="p-3 text-center">
-                            @if($member->active)
-                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
-                                    Active
-                                </span>
-                            @else
-                                <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                                    Inactive
-                                </span>
-                            @endif
-                        </td>
-
-                        <td class="p-3 text-center">
-                            <a href="{{ route('members.edit', $member) }}"
-                               class="text-blue-600 hover:underline mr-3">
-                                Edit
-                            </a>
-
-                            <form action="{{ route('members.destroy', $member) }}"
-                                  method="POST"
-                                  class="inline"
-                                  onsubmit="return confirm('Delete this member?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="text-red-600 hover:underline">
-                                    Delete
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
+        <!-- MEMBERS TABLE CARD -->
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td colspan="8" class="p-4 text-center text-gray-500">
-                            No members found
-                        </td>
+                        <th style="width: 12%;">Card ID</th>
+                        <th style="width: 16%;">Name</th>
+                        <th style="width: 16%;">Email</th>
+                        <th style="width: 12%;">Phone</th>
+                        <th style="width: 12%;">Membership</th>
+                        <th style="width: 12%;">Period</th>
+                        <th style="width: 8%; text-align: center;">Status</th>
+                        <th style="width: 12%; text-align: center;">Actions</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($members as $member)
+                        <tr>
+                            <td style="font-weight: 600; color: #d4af37;">{{ $member->card_id ?? '-' }}</td>
+                            <td>{{ $member->name }}</td>
+                            <td>{{ $member->email }}</td>
+                            <td>{{ $member->phone }}</td>
+                            <td>{{ optional($member->membership)->name ?? '-' }}</td>
+                            <td>
+                                <span style="display: block; color: #d1d5db;">{{ $member->start_date }}</span>
+                                <span style="display: block; color: #6b7280; font-size: 0.75rem;">→ {{ $member->expiry_date?->format('M d, Y') ?? 'Not set' }}</span>
+                            </td>
+                            <td style="text-align: center;">
+                                @if($member->active)
+                                    <span class="status-active">Active</span>
+                                @else
+                                    <span class="status-inactive">Inactive</span>
+                                @endif
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="{{ route('members.edit', $member) }}" class="action-link" style="margin-right: 1rem;">Edit</a>
+                                <form action="{{ route('members.destroy', $member) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this member?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-link-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                No members found
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MEMBERS SUMMARY FOOTER -->
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(212, 175, 55, 0.2); color: #9ca3af; font-size: 0.875rem;">
+            <p>Displaying {{ $members->count() }} members</p>
+        </div>
+
     </div>
 </div>
 @endsection
