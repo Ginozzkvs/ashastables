@@ -22,6 +22,10 @@
                             Dashboard
                         </x-nav-link>
 
+                        <x-nav-link :href="route('staff.scan')" :active="request()->routeIs('staff.scan')" style="color: #e0e0e0;">
+                            Staff Scan
+                        </x-nav-link>
+
                         <x-nav-link :href="route('members.index')" :active="request()->routeIs('members.*')" style="color: #e0e0e0;">
                             Members
                         </x-nav-link>
