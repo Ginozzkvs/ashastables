@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use App\Models\Membership;
+use Illuminate\Support\Facades\DB;
 
 class MemberController extends Controller
 {
@@ -62,35 +63,31 @@ class MemberController extends Controller
     // Update member
    public function update(Request $request, Member $member)
 {
-    $rules = [
-        'name' => 'required|string|max:255',
-        'phone' => 'nullable|string|max:255',
-        'email' => 'nullable|email|max:255',
-        'membership_id' => 'required|exists:memberships,id',
-        'start_date' => 'required|date',
-        'expiry_date' => 'required|date|after_or_equal:start_date',
-        'active' => 'nullable|boolean',
-    ];
+    $oldCardId = $member->card_id;
+    $newCardId = $request->input('card_id');
     
-    // Only validate uniqueness for card_uid if it's being changed
-    if ($request->filled('card_uid') && $request->card_uid !== $member->card_uid) {
-        $rules['card_uid'] = 'nullable|string|max:255|unique:members,card_uid,' . $member->card_id . ',card_id';
-    } else {
-        $rules['card_uid'] = 'nullable|string|max:255';
+    // Validate the new card_id is unique
+    if ($newCardId !== $oldCardId) {
+        $request->validate([
+            'card_id' => 'required|string|max:255|unique:members,card_id',
+        ]);
     }
-    
-    $validated = $request->validate($rules);
 
-    $member->update([
-        'name' => $validated['name'],
-        'phone' => $validated['phone'] ?? null,
-        'email' => $validated['email'] ?? null,
-        'card_uid' => $validated['card_uid'] ?? null,
-        'membership_id' => $validated['membership_id'],
-        'start_date' => $validated['start_date'],
-        'expiry_date' => $validated['expiry_date'],
-        'active' => $request->has('active'), // ✅ correct checkbox handling
-    ]);
+    // Update all fields using raw query to handle primary key change
+    DB::table('members')
+        ->where('card_id', $oldCardId)
+        ->update([
+            'card_id' => $newCardId,
+            'name' => $request->input('name'),
+            'phone' => $request->input('phone'),
+            'email' => $request->input('email'),
+            'card_uid' => $request->input('card_uid'),
+            'membership_id' => $request->input('membership_id'),
+            'start_date' => $request->input('start_date'),
+            'expiry_date' => $request->input('expiry_date'),
+            'active' => $request->has('active') ? 1 : 0,
+            'updated_at' => now(),
+        ]);
 
     return redirect()
         ->route('members.index')

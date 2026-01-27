@@ -63,11 +63,30 @@ class StaffActivityController extends Controller
 
         try {
             $activityLog = ActivityService::useActivity($request->card_uid, $request->activity_id);
+            
+            // Get member and activity data
+            $member = $activityLog->member;
+            $activity = $activityLog->activity;
+            
+            // Get remaining sessions for this activity
+            $balance = \App\Models\MemberActivityBalance::where('member_id', $member->id)
+                ->where('activity_id', $activity->id)
+                ->first();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Activity reserved successfully',
-                'receipt_url' => route('staff.receipt', ['log_id' => $activityLog->id])
+                'receipt_url' => route('staff.receipt', ['log_id' => $activityLog->id]),
+                'member' => [
+                    'name' => $member->name,
+                    'id' => $member->card_uid
+                ],
+                'activity' => [
+                    'name' => $activity->name,
+                    'id' => $activity->id
+                ],
+                'remaining_sessions' => $balance ? $balance->remaining_count : 0,
+                'used_sessions' => $activityLog->quantity ?? 1
             ]);
         } catch (\Exception $e) {
             return response()->json([

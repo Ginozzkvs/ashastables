@@ -132,11 +132,11 @@
         <!-- PAGE HEADER -->
         <div class="flex items-start justify-between mb-8">
             <div>
-                <p class="text-xs uppercase tracking-widest font-bold mb-2" style="color: #d4af37;">Manage Programs</p>
-                <h2 class="text-4xl font-bold text-white" style="letter-spacing: -1px; font-family: 'Cormorant Garamond', serif;">Activities</h2>
-                <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.5rem;">View and manage all equestrian activity programs</p>
+                <p class="text-xs uppercase tracking-widest font-bold mb-2" style="color: #d4af37;">{{ __('messages.manage_programs') }}</p>
+                <h2 class="text-4xl font-bold text-white" style="letter-spacing: -1px; font-family: 'Cormorant Garamond', serif;">{{ __('messages.activities') }}</h2>
+                <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.5rem;">{{ __('messages.activities_subtitle') }}</p>
             </div>
-            <a href="{{ route('activities.create') }}" class="btn-gold">+ Add Activity</a>
+            <a href="{{ route('activities.create') }}" class="btn-gold">+ {{ __('messages.add_activity') }}</a>
         </div>
 
         <!-- SUCCESS MESSAGE -->
@@ -152,9 +152,9 @@
                 <table class="w-full text-sm" style="background: #1a1f2e;">
                     <thead>
                         <tr class="table-header">
-                            <th class="text-left px-6 py-4 text-xs font-bold tracking-widest uppercase" style="color: #d1d5db;">Activity Name</th>
-                            <th class="text-left px-6 py-4 text-xs font-bold tracking-widest uppercase" style="color: #d1d5db;">Unit</th>
-                            <th class="text-left px-6 py-4 text-xs font-bold tracking-widest uppercase" style="color: #d1d5db;">Actions</th>
+                            <th class="text-left px-6 py-4 text-xs font-bold tracking-widest uppercase" style="color: #d1d5db;">{{ __('messages.activity_name') }}</th>
+                            <th class="text-left px-6 py-4 text-xs font-bold tracking-widest uppercase" style="color: #d1d5db;">{{ __('messages.unit') }}</th>
+                            <th class="text-left px-6 py-4 text-xs font-bold tracking-widest uppercase" style="color: #d1d5db;">{{ __('messages.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -162,24 +162,24 @@
                         <tr class="table-row">
                             <td class="px-6 py-4 text-gray-200 font-semibold">{{ $activity->name }}</td>
                             <td class="px-6 py-4">
-                                <span class="badge badge-unit">{{ $activity->unit ?? 'Session' }}</span>
+                                <span class="badge badge-unit">{{ $activity->unit ?? __('messages.session') }}</span>
                             </td>
                             <td class="px-6 py-4 flex gap-3">
-                                <a href="{{ route('activities.edit', $activity->id) }}" class="btn-outline">Edit</a>
+                                <a href="{{ route('activities.edit', $activity->id) }}" class="btn-outline">{{ __('messages.edit') }}</a>
 
                                 <form action="{{ route('activities.destroy', $activity->id) }}"
                                       method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-danger" onclick="return confirm('Delete this activity?')">
-                                        Delete
+                                    <button type="submit" class="btn-danger" onclick="return confirm('{{ __('messages.confirm_delete_activity') }}')">
+                                        {{ __('messages.delete') }}
                                     </button>
                                 </form>
                             </td>
                         </tr>
                         @empty
                         <tr class="table-row">
-                            <td colspan="3" class="px-6 py-4 text-center text-gray-400">No activities found. Create one to get started.</td>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-400">{{ __('messages.no_activities_found') }}</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -16,11 +16,11 @@
         }
 
         body {
-            background: #fff;
-            color: #000;
+            background: #f5f5f5;
+            color: #1a1a1a;
             font-family: 'Courier Prime', monospace;
             font-size: 11px;
-            line-height: 1.4;
+            line-height: 1.5;
             width: 58mm;
             margin: 0 auto;
             padding: 0;
@@ -29,36 +29,42 @@
         .receipt {
             width: 58mm;
             margin: 0 auto;
-            padding: 8mm;
+            padding: 10mm;
             background: #fff;
-            color: #000;
+            color: #1a1a1a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* HEADER */
         .header {
             text-align: center;
-            margin-bottom: 8mm;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 6mm;
+            margin-bottom: 10mm;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 6mm 0 8mm 0;
         }
 
         .logo {
             font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-weight: 600;
+            letter-spacing: 1px;
             margin-bottom: 2mm;
             font-family: 'Cormorant Garamond', serif;
+            color: #1a1a1a;
         }
 
         .subtitle {
             font-size: 9px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            color: #555;
         }
 
         .tagline {
             font-size: 8px;
             margin-top: 2mm;
-            font-style: italic;
+            font-weight: 500;
+            color: #888;
+            letter-spacing: 0px;
         }
 
         /* RECEIPT NUMBER & TIME */
@@ -66,8 +72,9 @@
             font-size: 9px;
             margin-bottom: 6mm;
             text-align: center;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 4mm;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5mm;
+            color: #666;
         }
 
         .meta-row {
@@ -79,51 +86,58 @@
             display: inline-block;
             width: 30mm;
             text-align: left;
+            color: #1a1a1a;
         }
 
         .value {
             text-align: right;
             word-break: break-all;
+            color: #555;
         }
 
         /* MEMBER SECTION */
         .section {
             margin-bottom: 6mm;
-            padding-bottom: 4mm;
+            padding-bottom: 5mm;
         }
 
         .section-title {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 10px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             margin-bottom: 3mm;
             text-transform: uppercase;
+            color: #1a1a1a;
         }
 
         .member-info {
-            border-bottom: 1px dashed #000;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5mm;
         }
 
         .member-name {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 12px;
-            margin-bottom: 2mm;
+            margin-bottom: 3mm;
+            color: #1a1a1a;
         }
 
         .member-detail {
             font-size: 9px;
             margin: 1mm 0;
+            color: #666;
         }
 
         /* ACTIVITY SECTION */
         .activity-details {
-            border-bottom: 1px dashed #000;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .activity-name {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 11px;
-            margin-bottom: 2mm;
+            margin-bottom: 3mm;
+            color: #1a1a1a;
         }
 
         .activity-detail {
@@ -131,6 +145,7 @@
             margin: 1.5mm 0;
             display: flex;
             justify-content: space-between;
+            color: #666;
         }
 
         .activity-detail-label {
@@ -139,13 +154,14 @@
 
         .activity-detail-value {
             text-align: right;
-            font-weight: 700;
+            font-weight: 500;
+            color: #1a1a1a;
         }
 
         /* USAGE TRACKER */
         .usage-tracker {
-            border-bottom: 1px dashed #000;
-            padding: 4mm 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 5mm 0;
         }
 
         .usage-row {
@@ -153,6 +169,7 @@
             justify-content: space-between;
             font-size: 9px;
             margin: 1.5mm 0;
+            color: #666;
         }
 
         .usage-label {
@@ -161,17 +178,19 @@
 
         .usage-value {
             text-align: right;
-            font-weight: 700;
+            font-weight: 500;
+            color: #1a1a1a;
         }
 
         .remaining {
-            color: #000;
+            color: #1a1a1a;
+            font-weight: 700;
         }
 
         /* SESSION INFO */
         .session-info {
-            border-bottom: 1px dashed #000;
-            padding: 4mm 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 5mm 0;
         }
 
         .session-row {
@@ -179,6 +198,7 @@
             justify-content: space-between;
             font-size: 9px;
             margin: 1.5mm 0;
+            color: #666;
         }
 
         .session-label {
@@ -187,31 +207,34 @@
 
         .session-value {
             text-align: right;
-            font-weight: 700;
+            font-weight: 500;
+            color: #1a1a1a;
         }
 
         /* FOOTER */
         .footer {
             text-align: center;
             margin-top: 6mm;
-            padding-top: 4mm;
+            padding-top: 5mm;
         }
 
         .thank-you {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 11px;
             margin-bottom: 2mm;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            color: #1a1a1a;
         }
 
         .footer-text {
             font-size: 8px;
             margin: 1mm 0;
             line-height: 1.3;
+            color: #888;
         }
 
         .divider {
-            border-bottom: 1px dashed #000;
+            border-bottom: 1px solid #e0e0e0;
             margin: 4mm 0;
         }
 
@@ -260,9 +283,9 @@
 <div class="receipt">
     <!-- HEADER -->
     <div class="header">
-        <div class="logo">★ ASHA STABLES ★</div>
+        <div class="logo">* ASHA STABLES *</div>
         <div class="subtitle">EQUESTRIAN RESORT</div>
-        <div class="tagline">Activity Session Receipt</div>
+        <div class="tagline">Membership Receipt</div>
     </div>
 
     <!-- RECEIPT META -->
@@ -273,17 +296,17 @@
         </div>
         <div class="meta-row">
             <span class="label">DATE</span>
-            <span class="value">{{ $activity_log->created_at->format('m/d/Y') }}</span>
+            <span class="value">{{ $activity_log->created_at->setTimezone('Asia/Bangkok')->format('m/d/Y') }}</span>
         </div>
         <div class="meta-row">
             <span class="label">TIME</span>
-            <span class="value">{{ $activity_log->created_at->format('h:i A') }}</span>
+            <span class="value">{{ $activity_log->created_at->setTimezone('Asia/Bangkok')->format('H:i') }}</span>
         </div>
     </div>
 
     <!-- MEMBER SECTION -->
     <div class="section member-info">
-        <div class="section-title">— MEMBER —</div>
+        <div class="section-title">MEMBER</div>
         <div class="member-name">{{ $activity_log->member->name }}</div>
         <div class="member-detail">
             ID: {{ $activity_log->member->card_id }}
@@ -296,30 +319,30 @@
         </div>
     </div>
 
-    <!-- ACTIVITY SECTION -->
+    <!-- MEMBERSHIP SECTION -->
     <div class="section activity-details">
-        <div class="section-title">— ACTIVITY —</div>
-        <div class="activity-name">{{ $activity_log->activity->name }}</div>
+        <div class="section-title">MEMBERSHIP</div>
+        <div class="activity-name">{{ $activity_log->member->membership->name ?? 'Standard' }}</div>
         
         <div class="activity-detail">
-            <span class="activity-detail-label">Duration:</span>
-            <span class="activity-detail-value">{{ $activity_log->activity->duration ?? 1 }} time</span>
+            <span class="activity-detail-label">Membership Type:</span>
+            <span class="activity-detail-value">Active</span>
         </div>
 
         <div class="activity-detail">
-            <span class="activity-detail-label">Instructor:</span>
-            <span class="activity-detail-value">{{ $activity_log->staff->name ?? 'Staff' }}</span>
+            <span class="activity-detail-label">Status:</span>
+            <span class="activity-detail-value">Valid</span>
         </div>
     </div>
 
     <!-- USAGE TRACKER -->
     @if($balance)
     <div class="section usage-tracker">
-        <div class="section-title">— SESSION STATUS —</div>
+        <div class="section-title">SESSION STATUS</div>
         
         <div class="usage-row">
             <span class="usage-label">Sessions Used:</span>
-            <span class="usage-value">{{ 0 }}</span>
+            <span class="usage-value">{{ ($balance->remaining_count + 1) - $balance->remaining_count }}</span>
         </div>
 
         <div class="usage-row">
@@ -334,28 +357,19 @@
     </div>
     @endif
 
-    <!-- SESSION DETAILS -->
+    <!-- MEMBERSHIP VALID THROUGH -->
     <div class="section session-info">
-        <div class="section-title">— SESSION DETAILS —</div>
+        <div class="section-title">MEMBERSHIP VALID</div>
         
         <div class="session-row">
+            <span class="session-label">Issued Date:</span>
+            <span class="session-value">{{ $activity_log->created_at->setTimezone('Asia/Bangkok')->format('m/d/Y') }}</span>
+        </div>
+
+        <div class="session-row">
             <span class="session-label">Status:</span>
-            <span class="session-value">RESERVED</span>
+            <span class="session-value">ACTIVE</span>
         </div>
-
-        @if($activity_log->check_in_time)
-        <div class="session-row">
-            <span class="session-label">Check-in:</span>
-            <span class="session-value">{{ $activity_log->check_in_time->format('h:i A') }}</span>
-        </div>
-        @endif
-
-        @if($activity_log->check_out_time)
-        <div class="session-row">
-            <span class="session-label">Check-out:</span>
-            <span class="session-value">{{ $activity_log->check_out_time->format('h:i A') }}</span>
-        </div>
-        @endif
     </div>
 
     <!-- FOOTER -->
@@ -368,8 +382,8 @@
         <div class="footer-text">
             For support, contact staff.
         </div>
-        <div style="margin-top: 4mm; font-size: 8px; letter-spacing: 2px;">
-            ★★★★★
+        <div style="margin-top: 4mm; font-size: 8px; letter-spacing: 0px; color: #ddd;">
+            • • • • •
         </div>
     </div>
 </div>

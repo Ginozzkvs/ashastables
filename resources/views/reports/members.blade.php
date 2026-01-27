@@ -58,7 +58,7 @@
                     <input type="date" name="end_date" class="form-input" value="{{ $endDate->format('Y-m-d') }}">
                 </div>
                 <button type="submit" class="btn">Filter</button>
-                <a href="{{ route('reports.export.members', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="export-btn">📥 Export CSV</a>
+                <a href="{{ route('reports.export.members', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d')]) }}" class="export-btn">Export CSV</a>
             </div>
         </form>
 

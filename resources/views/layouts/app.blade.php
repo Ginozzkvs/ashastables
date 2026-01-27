@@ -7,17 +7,30 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@100..900&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <style>
+        * {
+            font-family: 'Noto Sans Lao', sans-serif !important;
+        }
+    </style>
 </head>
 
-<body class="font-sans antialiased" style="background: #0f1419;">
-    <div class="min-h-screen">
+<body class="font-sans antialiased" style="background: #0f1419; font-family: 'Noto Sans Lao', sans-serif;">
+    <div x-data="{ sidebarExpanded: localStorage.getItem('sidebarExpanded') === 'true' }" 
+         @sidebar-toggled.window="sidebarExpanded = $event.detail"
+         class="min-h-screen transition-all duration-300"
+         :class="sidebarExpanded ? 'lg:pl-64' : 'lg:pl-20'">
 
         {{-- ✅ KEEP THIS --}}
         @include('layouts.navigation')
+
+        <!-- Add padding for mobile header -->
+        <div class="lg:hidden h-16"></div>
 
         @isset($header)
             <header style="background: #1a1f2e; border-bottom: 1px solid #d4af37;">

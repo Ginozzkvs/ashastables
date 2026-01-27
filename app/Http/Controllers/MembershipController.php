@@ -60,7 +60,7 @@ class MembershipController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'duration_days' => 'required|integer|min:1',
-            'activity_limits' => 'required|json',
+            'activity_limits' => 'json',
         ]);
 
         $membership->update($request->only('name','price','duration_days'));
@@ -69,14 +69,16 @@ class MembershipController extends Controller
         MembershipActivityLimit::where('membership_id', $membership->id)->delete();
         
         // Handle activity limits
-        $limits = json_decode($request->activity_limits, true);
-        foreach ($limits as $limit) {
-            MembershipActivityLimit::create([
-                'membership_id' => $membership->id,
-                'activity_id' => $limit['activity_id'],
-                'max_per_year' => $limit['max_per_year'],
-                'max_per_day' => $limit['max_per_day'],
-            ]);
+        if ($request->activity_limits) {
+            $limits = json_decode($request->activity_limits, true);
+            foreach ($limits as $limit) {
+                MembershipActivityLimit::create([
+                    'membership_id' => $membership->id,
+                    'activity_id' => $limit['activity_id'],
+                    'max_per_year' => $limit['max_per_year'],
+                    'max_per_day' => $limit['max_per_day'],
+                ]);
+            }
         }
 
         return redirect()

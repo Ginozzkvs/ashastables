@@ -34,47 +34,44 @@
 <div class="container">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>Reports & Exports</h1>
-            <p style="color: #9ca3af; font-size: 0.875rem;">Generate detailed reports and export data</p>
+            <h1>{{ __('messages.reports_exports') }}</h1>
+            <p style="color: #9ca3af; font-size: 0.875rem;">{{ __('messages.reports_subtitle') }}</p>
         </div>
 
         <div class="reports-grid">
             <!-- Revenue Report -->
             <div class="report-card">
-                <div class="report-icon">💰</div>
-                <div class="report-title">Revenue Report</div>
+                <div class="report-title">{{ __('messages.revenue_report') }}</div>
                 <div class="report-description">
-                    View revenue by membership type, daily trends, and financial analytics. Filter by date range.
+                    {{ __('messages.revenue_report_desc') }}
                 </div>
                 <div class="report-actions">
-                    <a href="{{ route('reports.revenue') }}" class="btn-sm primary">View Report</a>
-                    <a href="{{ route('reports.export.revenue') }}" class="btn-sm">Export CSV</a>
+                    <a href="{{ route('reports.revenue') }}" class="btn-sm primary">{{ __('messages.view_report') }}</a>
+                    <a href="{{ route('reports.export.revenue') }}" class="btn-sm">{{ __('messages.export_csv') }}</a>
                 </div>
             </div>
 
             <!-- Member Analytics -->
             <div class="report-card">
-                <div class="report-icon">👥</div>
-                <div class="report-title">Member Analytics</div>
+                <div class="report-title">{{ __('messages.member_analytics') }}</div>
                 <div class="report-description">
-                    Analyze member growth, distribution by membership type, and activity patterns over time.
+                    {{ __('messages.member_analytics_desc') }}
                 </div>
                 <div class="report-actions">
-                    <a href="{{ route('reports.members') }}" class="btn-sm primary">View Report</a>
-                    <a href="{{ route('reports.export.members') }}" class="btn-sm">Export CSV</a>
+                    <a href="{{ route('reports.members') }}" class="btn-sm primary">{{ __('messages.view_report') }}</a>
+                    <a href="{{ route('reports.export.members') }}" class="btn-sm">{{ __('messages.export_csv') }}</a>
                 </div>
             </div>
 
             <!-- Activity Usage -->
             <div class="report-card">
-                <div class="report-icon">🎪</div>
-                <div class="report-title">Activity Usage</div>
+                <div class="report-title">{{ __('messages.activity_usage') }}</div>
                 <div class="report-description">
-                    Track activity popularity, usage trends, and booking patterns across your resort.
+                    {{ __('messages.activity_usage_desc') }}
                 </div>
                 <div class="report-actions">
-                    <a href="{{ route('reports.activities') }}" class="btn-sm primary">View Report</a>
-                    <a href="{{ route('reports.export.activities') }}" class="btn-sm">Export CSV</a>
+                    <a href="{{ route('reports.activities') }}" class="btn-sm primary">{{ __('messages.view_report') }}</a>
+                    <a href="{{ route('reports.export.activities') }}" class="btn-sm">{{ __('messages.export_csv') }}</a>
                 </div>
             </div>
         </div>

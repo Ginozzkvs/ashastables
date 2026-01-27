@@ -268,7 +268,7 @@
     </style>
 </head>
 
-<body x-data="scanComponent()" x-init="$nextTick(() => $refs.nfc.focus())">
+<body x-data="scanComponent()" x-init="init(); $nextTick(() => $refs.nfc.focus())">
 
 <div class="container">
     <!-- HEADER WITH LOGO -->
@@ -283,8 +283,8 @@
         </svg>
         
         <h1>ASHA</h1>
-        <p>EQUESTRIAN RESORT</p>
-        <p>STAFF ACTIVITY MANAGEMENT</p>
+        <p>{{ __('messages.equestrian_resort') }}</p>
+        <p>{{ __('messages.staff_activity_management') }}</p>
     </div>
 
     <!-- NFC SCAN PANEL -->
@@ -296,14 +296,14 @@
             <path d="M68 65 Q72 70 68 75" stroke="#d4af37" stroke-width="1.5" fill="none" stroke-linecap="round"/>
         </svg>
         
-        <h3>SCAN MEMBER CARD</h3>
+        <h3>{{ __('messages.scan_member_card') }}</h3>
         
         <div x-show="!card_uid">
-            <p class="authenticating">READY TO AUTHENTICATE</p>
+            <p class="authenticating">{{ __('messages.ready_to_authenticate') }}</p>
         </div>
         
         <div x-show="card_uid" class="uid">
-            <p style="margin: 0 0 0.5rem; color: #9ca3af; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;">CARD UID</p>
+            <p style="margin: 0 0 0.5rem; color: #9ca3af; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;">{{ __('messages.card_uid') }}</p>
             <p style="margin: 0; color: #d4af37; letter-spacing: 0.1em;" x-text="card_uid"></p>
         </div>
 
@@ -326,19 +326,19 @@
     <template x-if="member">
         <div class="card-base">
             <div style="margin-bottom: 1.5rem;">
-                <p class="card-label">Member</p>
+                <p class="card-label">{{ __('messages.member') }}</p>
                 <h3 x-text="member.name" style="margin: 0;"></h3>
                 <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.5rem; font-family: 'Courier New', monospace;" x-text="member.id"></p>
             </div>
             
             <div style="border-top: 1px solid #d4af37; padding-top: 1.5rem;">
                 <div style="margin-bottom: 1rem;">
-                    <p class="card-label">Valid Until</p>
+                    <p class="card-label">{{ __('messages.valid_until') }}</p>
                     <p style="margin: 0; color: #d1d5db;" x-text="member.expiry_date"></p>
                 </div>
                 <div>
-                    <p class="card-label">Status</p>
-                    <p style="margin: 0; color: #4ade80; font-weight: 700;">ACTIVE</p>
+                    <p class="card-label">{{ __('messages.status') }}</p>
+                    <p style="margin: 0; color: #4ade80; font-weight: 700;">{{ __('messages.active') }}</p>
                 </div>
             </div>
         </div>
@@ -347,7 +347,7 @@
     <!-- AUTHENTICATING STATE -->
     <template x-if="!member && !error && card_uid">
         <div class="card-base" style="text-align: center;">
-            <p class="authenticating">AUTHENTICATING MEMBER...</p>
+            <p class="authenticating">{{ __('messages.authenticating_member') }}</p>
         </div>
     </template>
 
@@ -362,17 +362,17 @@
 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #d4af37;">
                     <div>
-                        <p class="card-label">Used</p>
+                        <p class="card-label">{{ __('messages.used') }}</p>
                         <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #d1d5db;" x-text="a.used_count || 0"></p>
                     </div>
                     <div>
-                        <p class="card-label">Remaining</p>
+                        <p class="card-label">{{ __('messages.remaining') }}</p>
                         <p style="margin: 0; font-size: 1.5rem; font-weight: 700;" :class="Number(a.remaining_count) > 0 ? 'text-green-400' : 'text-red-400'" 
                            :style="Number(a.remaining_count) > 0 ? 'color: #4ade80;' : 'color: #f87171;'"
                            x-text="a.remaining_count"></p>
                     </div>
                     <div>
-                        <p class="card-label">Total</p>
+                        <p class="card-label">{{ __('messages.total') }}</p>
                         <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #d1d5db;" x-text="Number(a.remaining_count) + (a.used_count || 0)"></p>
                     </div>
                 </div>
@@ -392,8 +392,8 @@
                     @click="openConfirm(a.activity.id)"
                     :class="Number(a.remaining_count) > 0 ? 'btn btn-gold' : 'btn btn-disabled'"
                 >
-                    <span x-show="Number(a.remaining_count) > 0">Reserve Session</span>
-                    <span x-show="Number(a.remaining_count) <= 0">Fully Booked</span>
+                    <span x-show="Number(a.remaining_count) > 0">{{ __('messages.reserve_session') }}</span>
+                    <span x-show="Number(a.remaining_count) <= 0">{{ __('messages.fully_booked') }}</span>
                 </button>
             </div>
         </template>
@@ -408,12 +408,47 @@
         <!-- CONFIRM -->
         <template x-if="modal.type === 'confirm'">
             <div>
-                <h3>CONFIRM SESSION</h3>
+                <h3>{{ __('messages.confirm_session') }}</h3>
                 <p x-text="modal.message"></p>
 
+                <!-- PRINTER SETTINGS IN MODAL -->
+                <div style="background: #0f1419; border: 1px solid #d4af37; padding: 1rem; margin: 1.5rem 0; border-radius: 0;">
+                    <p style="color: #d4af37; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 0.75rem;">{{ __('messages.print_settings') }}</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: #e0e0e0; cursor: pointer; font-size: 0.875rem;">
+                            <input type="radio" name="printerType" value="usb" x-model="printerType" style="cursor: pointer;">
+                            USB
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: #e0e0e0; cursor: pointer; font-size: 0.875rem;">
+                            <input type="radio" name="printerType" value="ethernet" x-model="printerType" style="cursor: pointer;">
+                            Ethernet
+                        </label>
+                    </div>
+                    
+                    <template x-if="printerType === 'usb'">
+                        <select x-model="usbPrinterName" style="width: 100%; padding: 0.5rem; background: #1a1f2e; border: 1px solid #d4af37; color: #e0e0e0; border-radius: 0.375rem; font-size: 0.875rem;">
+                            <option value="">{{ __('messages.select_printer') }}</option>
+                        </select>
+                    </template>
+                    
+                    <template x-if="printerType === 'ethernet'">
+                        <template x-if="ethernetPrinters.length > 0 && defaultEthernetPrinter">
+                            <div style="width: 100%; padding: 0.5rem; background: #1a1f2e; border: 1px solid #d4af37; color: #e0e0e0; border-radius: 0.375rem; font-size: 0.875rem; display: flex; align-items: center; justify-content: space-between;">
+                                <span x-text="ethernetPrinters.find(p => p.id.toString() === defaultEthernetPrinter)?.name || '{{ __('messages.not_set') }}'"></span>
+                                <span style="font-size: 0.75rem; color: #9ca3af;">({{ __('messages.default') }})</span>
+                            </div>
+                        </template>
+                        <template x-if="!defaultEthernetPrinter || ethernetPrinters.length === 0">
+                            <div style="width: 100%; padding: 0.5rem; background: #1a1f2e; border: 1px solid #ef4444; color: #ef4444; border-radius: 0.375rem; font-size: 0.875rem;">
+                                {{ __('messages.no_default_printer') }}
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
                 <div class="modal-actions">
-                    <button class="btn btn-outline" @click="closeModal()">Cancel</button>
-                    <button class="btn btn-gold" @click="confirmUse()">Confirm</button>
+                    <button class="btn btn-outline" @click="closeModal()">{{ __('messages.cancel') }}</button>
+                    <button class="btn btn-gold" @click="confirmUse()">{{ __('messages.confirm_print') }}</button>
                 </div>
             </div>
         </template>
@@ -422,7 +457,7 @@
         <template x-if="modal.type === 'success'">
             <div style="text-align: center;">
                 <div class="success-icon">✓</div>
-                <h3 class="success-text" style="text-transform: uppercase;">SESSION RESERVED</h3>
+                <h3 class="success-text" style="text-transform: uppercase;">{{ __('messages.session_reserved') }}</h3>
                 <p style="color: #d1d5db; font-size: 0.875rem;" x-text="modal.message"></p>
             </div>
         </template>
@@ -431,7 +466,7 @@
         <template x-if="modal.type === 'error'">
             <div style="text-align: center;">
                 <div class="error-icon">✕</div>
-                <h3 class="error-text" style="text-transform: uppercase;">ERROR</h3>
+                <h3 class="error-text" style="text-transform: uppercase;">{{ __('messages.error') }}</h3>
                 <p style="color: #d1d5db; font-size: 0.875rem;" x-text="modal.message"></p>
             </div>
         </template>
@@ -448,6 +483,18 @@ function scanComponent() {
         activities: [],
         error: null,
 
+        // Ethernet printers list and default
+        ethernetPrinters: JSON.parse(localStorage.getItem('ethernetPrinters') || '[]'),
+        defaultEthernetPrinter: localStorage.getItem('defaultEthernetPrinter') || '',
+        
+        // Printer settings - default to ethernet if default printer is set, otherwise usb
+        get defaultPrinterType() {
+            return this.defaultEthernetPrinter ? 'ethernet' : 'usb'
+        },
+        printerType: null,
+        usbPrinterName: localStorage.getItem('usbPrinterName') || '',
+        ethernetIP: localStorage.getItem('ethernetIP') || '',
+
         scanTimer: null,
         scanLocked: false,
 
@@ -456,6 +503,11 @@ function scanComponent() {
             type: 'confirm',
             message: '',
             activityId: null,
+        },
+        
+        init() {
+            // Initialize printerType based on defaultEthernetPrinter
+            this.printerType = this.defaultPrinterType
         },
 
         onScanInput() {
@@ -501,7 +553,7 @@ function scanComponent() {
                 }
             })
             .catch(err => {
-                this.error = 'Network error'
+                this.error = '{{ __('messages.network_error') }}'
                 this.scanLocked = false
                 setTimeout(() => {
                     this.card_uid = ''
@@ -515,7 +567,7 @@ function scanComponent() {
             this.modal = {
                 show: true,
                 type: 'confirm',
-                message: 'Reserve this session?',
+                message: '{{ __('messages.reserve_this_session') }}',
                 activityId
             }
         },
@@ -525,6 +577,14 @@ function scanComponent() {
         },
 
         async confirmUse() {
+            // Save printer settings
+            localStorage.setItem('printerType', this.printerType)
+            if (this.printerType === 'usb') {
+                localStorage.setItem('usbPrinterName', this.usbPrinterName)
+            } else {
+                localStorage.setItem('ethernetIP', this.ethernetIP)
+            }
+
             try {
                 const res = await fetch('/staff/activity/use', {
                     method: 'POST',
@@ -544,9 +604,19 @@ function scanComponent() {
                     this.modal.type = 'success'
                     this.modal.message = data.message
                     
-                    // Print bill if receipt URL provided
-                    if (data.receipt_url) {
-                        this.printBill(data.receipt_url)
+                    // Print receipt if data provided
+                    if (data.member && data.activity) {
+                        const now = new Date()
+                        const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString()
+                        
+                        this.printBill({
+                            member_name: data.member.name,
+                            member_id: data.member.id,
+                            activity_name: data.activity.name,
+                            remaining_sessions: data.remaining_sessions,
+                            used_sessions: data.used_sessions,
+                            timestamp: timestamp
+                        })
                     }
                     
                     // Reset after showing success with enough time for print, then refresh page
@@ -565,7 +635,7 @@ function scanComponent() {
 
             } catch {
                 this.modal.type = 'error'
-                this.modal.message = 'System error'
+                this.modal.message = '{{ __('messages.system_error') }}'
                 setTimeout(() => {
                     this.reset()
                     location.reload()
@@ -573,16 +643,42 @@ function scanComponent() {
             }
         },
 
-        printBill(url) {
-            const printWindow = window.open(url, 'print', 'width=400,height=600')
-            if (printWindow) {
-                printWindow.onload = () => {
-                    setTimeout(() => {
-                        printWindow.print()
-                        setTimeout(() => printWindow.close(), 500)
-                    }, 300)
+        printBill(receiptData) {
+            // Send print request with actual receipt data
+            const printData = {
+                type: this.printerType,
+                receipt: receiptData
+            }
+            
+            if (this.printerType === 'usb') {
+                printData.printer_name = this.usbPrinterName
+            } else {
+                // Use default Ethernet printer
+                if (this.defaultEthernetPrinter) {
+                    const defaultPrinter = this.ethernetPrinters.find(p => p.id.toString() === this.defaultEthernetPrinter)
+                    if (defaultPrinter) {
+                        printData.ip_address = defaultPrinter.ip
+                    }
                 }
             }
+
+            console.log('Printing with data:', printData)
+            
+            fetch('{{ route("staff.printer.print-receipt") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(printData)
+            })
+            .then(r => r.json())
+            .then(result => {
+                console.log('Print response:', result)
+            })
+            .catch(err => {
+                console.error('Print error:', err)
+            })
         },
 
         reset() {

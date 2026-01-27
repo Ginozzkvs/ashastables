@@ -40,8 +40,8 @@
 <div class="container">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>Memberships</h1>
-            <a href="{{ route('memberships.create') }}" class="btn-gold">+ Add Membership</a>
+            <h1>{{ __('messages.memberships') }}</h1>
+            <a href="{{ route('memberships.create') }}" class="btn-gold">+ {{ __('messages.add_membership') }}</a>
         </div>
 
         @if(session('success'))
@@ -54,11 +54,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Membership Type</th>
-                        <th>Annual Price</th>
-                        <th>Duration</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th>{{ __('messages.membership_type') }}</th>
+                        <th>{{ __('messages.annual_price') }}</th>
+                        <th>{{ __('messages.duration') }}</th>
+                        <th>{{ __('messages.status') }}</th>
+                        <th>{{ __('messages.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,22 +66,22 @@
                     <tr>
                         <td><strong>{{ $membership->name }}</strong></td>
                         <td>${{ number_format($membership->price, 2) }}</td>
-                        <td>{{ $membership->duration_days }} days</td>
-                        <td><span class="status-badge status-active">Active</span></td>
+                        <td>{{ $membership->duration_days }} {{ __('messages.days') }}</td>
+                        <td><span class="status-badge status-active">{{ __('messages.active') }}</span></td>
                         <td>
                             <div class="action-links">
-                                <a href="{{ route('memberships.edit', $membership) }}" class="action-link">Edit</a>
+                                <a href="{{ route('memberships.edit', $membership) }}" class="action-link">{{ __('messages.edit') }}</a>
                                 <form action="{{ route('memberships.destroy', $membership) }}" method="POST" style="display: inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button onclick="return confirm('Are you sure you want to delete this membership?')" class="action-link delete" style="background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;">Delete</button>
+                                    <button onclick="return confirm('{{ __('messages.confirm_delete_membership') }}')" class="action-link delete" style="background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;">{{ __('messages.delete') }}</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" style="text-align: center; color: #9ca3af; padding: 2rem;"><a href="{{ route('memberships.create') }}" class="action-link">Create a membership</a> to get started</td>
+                        <td colspan="5" style="text-align: center; color: #9ca3af; padding: 2rem;"><a href="{{ route('memberships.create') }}" class="action-link">{{ __('messages.create_membership') }}</a> {{ __('messages.create_membership_to_start') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -90,11 +90,11 @@
 
         <div class="footer-stats">
             <div class="stat-item">
-                <div class="stat-label">Total Memberships</div>
+                <div class="stat-label">{{ __('messages.total_memberships') }}</div>
                 <div class="stat-value">{{ $memberships->count() }}</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Active Status</div>
+                <div class="stat-label">{{ __('messages.active_status') }}</div>
                 <div class="stat-value">{{ $memberships->count() }}</div>
             </div>
         </div>

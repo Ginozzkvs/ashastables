@@ -266,37 +266,31 @@
         <!-- Features Section -->
         <div id="features" class="features">
             <div class="feature-card">
-                <div class="feature-icon">👥</div>
                 <h3>Member Management</h3>
                 <p>Complete member lifecycle management with NFC card integration and activity tracking</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">📱</div>
                 <h3>NFC Check-In</h3>
                 <p>Seamless NFC card scanning for quick and efficient member check-ins</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">📊</div>
                 <h3>Advanced Analytics</h3>
                 <p>Real-time dashboard with revenue tracking, member trends, and activity insights</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🔄</div>
                 <h3>Membership Renewal</h3>
                 <p>Automatic expiration tracking and streamlined renewal process</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">📈</div>
                 <h3>Reports & Exports</h3>
                 <p>Comprehensive reports with CSV exports for revenue, members, and activities</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🔒</div>
                 <h3>Role-Based Access</h3>
                 <p>Secure admin and staff roles with different permission levels</p>
             </div>

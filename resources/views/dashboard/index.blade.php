@@ -56,34 +56,34 @@
 <div class="container">
     <div class="content-wrapper">
         <div class="page-header">
-            <h1>Dashboard</h1>
-            <p class="page-header-subtext">Luxury ASHA Resort - Management Overview</p>
+            <h1>{{ __('messages.dashboard') }}</h1>
+            <p class="page-header-subtext">{{ __('messages.dashboard_subtitle') }}</p>
         </div>
 
         <!-- Key Statistics -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-label">Total Members</div>
+                <div class="stat-label">{{ __('messages.total_members') }}</div>
                 <div class="stat-value">{{ $totalMembers }}</div>
-                <div class="stat-change">+{{ $membersThisMonth }} this month</div>
+                <div class="stat-change">+{{ $membersThisMonth }} {{ __('messages.this_month') }}</div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-label">Active Memberships</div>
+                <div class="stat-label">{{ __('messages.active_memberships') }}</div>
                 <div class="stat-value">{{ $activeMemberships }}</div>
-                <div class="stat-change">{{ $totalMembers > 0 ? round(($activeMemberships / $totalMembers) * 100) : 0 }}% coverage</div>
+                <div class="stat-change">{{ $totalMembers > 0 ? round(($activeMemberships / $totalMembers) * 100) : 0 }}% {{ __('messages.coverage') }}</div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-label">Monthly Revenue</div>
+                <div class="stat-label">{{ __('messages.monthly_revenue') }}</div>
                 <div class="stat-value" style="font-size: 1.75rem;">${{ number_format($totalRevenue, 0) }}</div>
-                <div class="stat-change">Annual value</div>
+                <div class="stat-change">{{ __('messages.annual_value') }}</div>
             </div>
 
             <div class="stat-card">
-                <div class="stat-label">Activities This Month</div>
+                <div class="stat-label">{{ __('messages.activities_this_month') }}</div>
                 <div class="stat-value">{{ $activitiesThisMonth }}</div>
-                <div class="stat-change">Sessions booked</div>
+                <div class="stat-change">{{ __('messages.sessions_booked') }}</div>
             </div>
         </div>
 
@@ -91,14 +91,14 @@
         <div class="dashboard-grid">
             <!-- Most Popular Activities -->
             <div class="card-base">
-                <h3 class="section-title" style="margin-top: 0; border: none; padding-bottom: 0;">Most Popular Activities</h3>
+                <h3 class="section-title" style="margin-top: 0; border: none; padding-bottom: 0;">{{ __('messages.most_popular_activities') }}</h3>
                 @if($popularActivities->count() > 0)
                     <div style="margin-top: 1.5rem;">
                         @foreach($popularActivities as $activity)
                         <div style="margin-bottom: 1.5rem;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                <span style="font-weight: 500;">{{ $activity->activity->name ?? 'Unknown' }}</span>
-                                <span class="badge badge-primary">{{ $activity->usage_count }} uses</span>
+                                <span style="font-weight: 500;">{{ $activity->activity->name ?? __('messages.unknown_activity') }}</span>
+                                <span class="badge badge-primary">{{ $activity->usage_count }} {{ __('messages.uses') }}</span>
                             </div>
                             <div class="activity-bar">
                                 <div class="activity-bar-fill" style="width: {{ ($activity->usage_count / $popularActivities->first()->usage_count) * 100 }}%"></div>
@@ -108,14 +108,14 @@
                     </div>
                 @else
                     <div class="empty-state">
-                        <p>No activity data yet</p>
+                        <p>{{ __('messages.no_activity_data') }}</p>
                     </div>
                 @endif
             </div>
 
             <!-- Members by Membership Type -->
             <div class="card-base">
-                <h3 class="section-title" style="margin-top: 0; border: none; padding-bottom: 0;">Members by Type</h3>
+                <h3 class="section-title" style="margin-top: 0; border: none; padding-bottom: 0;">{{ __('messages.members_by_type') }}</h3>
                 @if($membersByMembership->count() > 0)
                     <div style="margin-top: 1.5rem;">
                         @foreach($membersByMembership as $member)
@@ -127,7 +127,7 @@
                     </div>
                 @else
                     <div class="empty-state">
-                        <p>No members yet</p>
+                        <p>{{ __('messages.no_members_yet') }}</p>
                     </div>
                 @endif
             </div>
@@ -135,7 +135,7 @@
 
         <!-- Activity Trend (Last 7 Days) -->
         <div class="card-base">
-            <h3 class="section-title" style="margin-top: 0; border: none;">Activity Trend - Last 7 Days</h3>
+            <h3 class="section-title" style="margin-top: 0; border: none;">{{ __('messages.activity_trend') }}</h3>
             @if($activityTrend->count() > 0)
                 <div style="margin-top: 1.5rem;">
                     @php
@@ -145,7 +145,7 @@
                     <div style="margin-bottom: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                             <span style="font-weight: 500; color: #d1d5db;">{{ \Carbon\Carbon::parse($trend->date)->format('M d, Y') }}</span>
-                            <span style="color: #d4af37; font-weight: 600;">{{ $trend->count }} sessions</span>
+                            <span style="color: #d4af37; font-weight: 600;">{{ $trend->count }} {{ __('messages.sessions') }}</span>
                         </div>
                         <div class="activity-bar">
                             <div class="activity-bar-fill" style="width: {{ ($trend->count / $maxCount) * 100 }}%"></div>
@@ -155,24 +155,24 @@
                 </div>
             @else
                 <div class="empty-state">
-                    <p>No activity in the last 7 days</p>
+                    <p>{{ __('messages.no_activity_7_days') }}</p>
                 </div>
             @endif
         </div>
 
         <!-- Recent Activity Log -->
         <div class="card-base">
-            <h3 class="section-title" style="margin-top: 0; border: none;">Expiring Memberships</h3>
+            <h3 class="section-title" style="margin-top: 0; border: none;">{{ __('messages.expiring_memberships') }}</h3>
             @if($expiringMemberships->count() > 0)
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>Member</th>
-                                <th>Membership</th>
-                                <th>Expires In</th>
-                                <th>Expiry Date</th>
-                                <th>Action</th>
+                                <th>{{ __('messages.member') }}</th>
+                                <th>{{ __('messages.membership') }}</th>
+                                <th>{{ __('messages.expires_in') }}</th>
+                                <th>{{ __('messages.expiry_date') }}</th>
+                                <th>{{ __('messages.action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -185,12 +185,12 @@
                                 <td>{{ $member->membership->name }}</td>
                                 <td>
                                     <span class="badge" style="background: #92400e; color: #fcd34d;">
-                                        {{ $member->daysUntilExpiry() }} days
+                                        {{ $member->daysUntilExpiry() }} {{ __('messages.days') }}
                                     </span>
                                 </td>
                                 <td>{{ $member->expiry_date->format('M d, Y') }}</td>
                                 <td>
-                                    <a href="{{ route('memberships.renewal.form', $member->card_id) }}" style="color: #d4af37; text-decoration: none; font-weight: 600;">Renew →</a>
+                                    <a href="{{ route('memberships.renewal.form', $member->card_id) }}" style="color: #d4af37; text-decoration: none; font-weight: 600;">{{ __('messages.renew_arrow') }}</a>
                                 </td>
                             </tr>
                             @endforeach
@@ -200,35 +200,35 @@
                 @if($expiringMemberships->count() > 0)
                     <div style="margin-top: 1rem; text-align: center;">
                         <a href="{{ route('memberships.renewal.index') }}" class="badge badge-primary" style="padding: 0.5rem 1rem; cursor: pointer;">
-                            View All Expiring & Expired Members →
+                            {{ __('messages.view_all_expiring') }}
                         </a>
                     </div>
                 @endif
             @else
                 <div class="empty-state">
-                    <p>✓ No memberships expiring in the next 30 days</p>
+                    <p>✓ {{ __('messages.no_expiring_30_days') }}</p>
                 </div>
             @endif
             @if($expiredCount > 0)
                 <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 0;">
-                    <p style="color: #ef4444; font-weight: 600;">⚠️ {{ $expiredCount }} member(s) have expired membership</p>
-                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.25rem;">Please renew their memberships to restore access</p>
+                    <p style="color: #ef4444; font-weight: 600;">{{ $expiredCount }} {{ __('messages.expired_membership_warning') }}</p>
+                    <p style="color: #9ca3af; font-size: 0.875rem; margin-top: 0.25rem;">{{ __('messages.renew_access_warning') }}</p>
                 </div>
             @endif
         </div>
 
         <!-- Recent Activity Log -->
         <div class="card-base" style="margin-top: 2rem;">
-            <h3 class="section-title" style="margin-top: 0; border: none;"></h3>Recent Activity Log</h3>
+            <h3 class="section-title" style="margin-top: 0; border: none;">{{ __('messages.recent_activity_log') }}</h3>
             @if($recentActivities->count() > 0)
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
-                                <th>Member</th>
-                                <th>Activity</th>
-                                <th>Date & Time</th>
-                                <th>Status</th>
+                                <th>{{ __('messages.member') }}</th>
+                                <th>{{ __('messages.activity') }}</th>
+                                <th>{{ __('messages.date_time') }}</th>
+                                <th>{{ __('messages.status') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -238,9 +238,9 @@
                                     <strong>{{ $log->member->name ?? 'N/A' }}</strong><br>
                                     <span style="color: #6b7280; font-size: 0.875rem;">{{ $log->member->card_id ?? 'N/A' }}</span>
                                 </td>
-                                <td>{{ $log->activity->name ?? 'Unknown Activity' }}</td>
+                                <td>{{ $log->activity->name ?? __('messages.unknown_activity') }}</td>
                                 <td>{{ $log->created_at->format('M d, Y h:i A') }}</td>
-                                <td><span class="badge badge-success">Completed</span></td>
+                                <td><span class="badge badge-success">{{ __('messages.completed') }}</span></td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -248,7 +248,7 @@
                 </div>
             @else
                 <div class="empty-state">
-                    <p>No activities recorded yet</p>
+                    <p>{{ __('messages.no_activities_recorded') }}</p>
                 </div>
             @endif
         </div>

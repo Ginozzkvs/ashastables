@@ -217,12 +217,19 @@
                 @csrf
                 @method('PUT')
                 
-                <!-- Card ID (Display Only) -->
+                <!-- Store original card_id for routing -->
+                <input type="hidden" name="_original_card_id" value="{{ $member->card_id }}">
+                
+                <!-- Card ID -->
                 <div class="form-group">
                     <label class="form-label">Card ID</label>
-                    <div class="form-input" style="background: rgba(212, 175, 55, 0.1); border-style: dashed; display: flex; align-items: center; padding: 0.875rem 1rem; font-weight: 600; letter-spacing: 0.05em; color: #d4af37;">
-                        {{ $member->card_id ?? 'Not assigned' }}
-                    </div>
+                    <input 
+                        type="text" 
+                        name="card_id" 
+                        value="{{ old('card_id', $member->card_id) }}"
+                        placeholder="Card identifier"
+                        class="form-input"
+                        required>
                     <p class="help-text">Unique card identifier for this member</p>
                 </div>
                 
@@ -299,7 +306,7 @@
                         <input 
                             type="date" 
                             name="start_date" 
-                            value="{{ old('start_date', $member->start_date) }}"
+                            value="{{ old('start_date', $member->start_date?->format('Y-m-d')) }}"
                             class="form-input"
                             required>
                         <p class="help-text">When membership begins</p>

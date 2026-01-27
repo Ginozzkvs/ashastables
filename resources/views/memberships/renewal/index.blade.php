@@ -5,8 +5,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold mb-2" style="color: #d4af37;">Membership Renewal Management</h1>
-            <p style="color: #9ca3af;">Manage expiring and expired member memberships</p>
+            <h1 class="text-3xl font-bold mb-2" style="color: #d4af37;">{{ __('messages.membership_renewal_management') }}</h1>
+            <p style="color: #9ca3af;">{{ __('messages.manage_expiring_memberships') }}</p>
         </div>
 
         <!-- Messages -->
@@ -25,13 +25,13 @@
         <!-- Tab Navigation -->
         <div class="mb-6 flex gap-4 border-b" style="border-color: #d4af37;">
             <button onclick="showTab('expiring')" id="expiring-tab" class="px-4 py-3 font-medium transition-colors" style="color: #d4af37; border-bottom: 3px solid #d4af37;">
-                🔔 Expiring Soon ({{ $expiringMembers->total() }})
+                {{ __('messages.expiring_soon') }} ({{ $expiringMembers->total() }})
             </button>
             <button onclick="showTab('expired')" id="expired-tab" class="px-4 py-3 font-medium transition-colors" style="color: #9ca3af;">
-                ❌ Expired ({{ $expiredMembers->total() }})
+                {{ __('messages.expired') }} ({{ $expiredMembers->total() }})
             </button>
             <button onclick="showTab('stats')" id="stats-tab" class="px-4 py-3 font-medium transition-colors" style="color: #9ca3af;">
-                📊 Statistics
+                {{ __('messages.statistics') }}
             </button>
         </div>
 
@@ -44,30 +44,30 @@
                             <div class="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 class="text-xl font-bold" style="color: #d4af37;">{{ $member->name }}</h3>
-                                    <p style="color: #9ca3af;" class="text-sm">Card: {{ $member->card_id }}</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.card') }}: {{ $member->card_id }}</p>
                                 </div>
                                 <span class="px-3 py-1 rounded-full text-sm font-medium" style="background: #92400e; color: #fcd34d;">
-                                    {{ $member->daysUntilExpiry() }} days
+                                    {{ $member->daysUntilExpiry() }} {{ __('messages.days') }}
                                 </span>
                             </div>
 
                             <div class="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <p style="color: #9ca3af;" class="text-sm">Membership</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.membership') }}</p>
                                     <p class="font-semibold" style="color: #e0e0e0;">{{ $member->membership->name }}</p>
                                 </div>
                                 <div>
-                                    <p style="color: #9ca3af;" class="text-sm">Expires</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.expires') }}</p>
                                     <p class="font-semibold" style="color: #fcd34d;">{{ $member->expiry_date->format('M d, Y') }}</p>
                                 </div>
                                 <div>
-                                    <p style="color: #9ca3af;" class="text-sm">Price</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.price') }}</p>
                                     <p class="font-semibold" style="color: #e0e0e0;">${{ number_format($member->membership->price, 2) }}</p>
                                 </div>
                             </div>
 
                             <a href="{{ route('memberships.renewal.form', $member->card_id) }}" class="inline-block px-4 py-2 rounded-lg font-medium transition-colors" style="background: #d4af37; color: #0f1419;">
-                                Renew Now
+                                {{ __('messages.renew_now') }}
                             </a>
                         </div>
                     @endforeach
@@ -79,7 +79,7 @@
                 </div>
             @else
                 <div class="p-8 rounded-lg text-center" style="background: #1a1f2e;">
-                    <p class="text-lg" style="color: #9ca3af;">✓ No members with expiring memberships</p>
+                    <p class="text-lg" style="color: #9ca3af;">✓ {{ __('messages.no_expiring_members') }}</p>
                 </div>
             @endif
         </div>
@@ -93,30 +93,30 @@
                             <div class="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 class="text-xl font-bold" style="color: #ef4444;">{{ $member->name }}</h3>
-                                    <p style="color: #9ca3af;" class="text-sm">Card: {{ $member->card_id }}</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.card') }}: {{ $member->card_id }}</p>
                                 </div>
                                 <span class="px-3 py-1 rounded-full text-sm font-medium" style="background: #7f1d1d; color: #fca5a5;">
-                                    Expired {{ abs($member->daysUntilExpiry()) }} days ago
+                                    {{ __('messages.expired_days_ago', ['days' => abs($member->daysUntilExpiry())]) }}
                                 </span>
                             </div>
 
                             <div class="grid grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <p style="color: #9ca3af;" class="text-sm">Membership</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.membership') }}</p>
                                     <p class="font-semibold" style="color: #e0e0e0;">{{ $member->membership->name }}</p>
                                 </div>
                                 <div>
-                                    <p style="color: #9ca3af;" class="text-sm">Expired</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.expired') }}</p>
                                     <p class="font-semibold" style="color: #ef4444;">{{ $member->expiry_date->format('M d, Y') }}</p>
                                 </div>
                                 <div>
-                                    <p style="color: #9ca3af;" class="text-sm">Price</p>
+                                    <p style="color: #9ca3af;" class="text-sm">{{ __('messages.price') }}</p>
                                     <p class="font-semibold" style="color: #e0e0e0;">${{ number_format($member->membership->price, 2) }}</p>
                                 </div>
                             </div>
 
                             <a href="{{ route('memberships.renewal.form', $member->card_id) }}" class="inline-block px-4 py-2 rounded-lg font-medium transition-colors" style="background: #ef4444; color: white;">
-                                Renew Now
+                                {{ __('messages.renew_now') }}
                             </a>
                         </div>
                     @endforeach
@@ -128,7 +128,7 @@
                 </div>
             @else
                 <div class="p-8 rounded-lg text-center" style="background: #1a1f2e;">
-                    <p class="text-lg" style="color: #9ca3af;">✓ No members with expired memberships</p>
+                    <p class="text-lg" style="color: #9ca3af;">✓ {{ __('messages.no_expired_members') }}</p>
                 </div>
             @endif
         </div>
@@ -137,7 +137,7 @@
         <div id="stats" class="tab-content hidden">
             <div class="grid grid-cols-4 gap-6 mb-6">
                 <div class="p-6 rounded-lg text-center" style="background: #1a1f2e; border: 1px solid #d4af37;">
-                    <p style="color: #9ca3af;" class="text-sm mb-2">Total Members</p>
+                    <p style="color: #9ca3af;" class="text-sm mb-2">{{ __('messages.total_members') }}</p>
                     <p class="text-4xl font-bold" style="color: #d4af37;">
                         @php
                             echo \App\Models\Member::where('active', true)->count();
@@ -146,7 +146,7 @@
                 </div>
 
                 <div class="p-6 rounded-lg text-center" style="background: #1a1f2e; border: 1px solid #fcd34d;">
-                    <p style="color: #9ca3af;" class="text-sm mb-2">Expiring (30 days)</p>
+                    <p style="color: #9ca3af;" class="text-sm mb-2">{{ __('messages.expiring_30_days') }}</p>
                     <p class="text-4xl font-bold" style="color: #fcd34d;">
                         @php
                             echo \App\Models\Member::where('active', true)
@@ -158,7 +158,7 @@
                 </div>
 
                 <div class="p-6 rounded-lg text-center" style="background: #1a1f2e; border: 1px solid #ef4444;">
-                    <p style="color: #9ca3af;" class="text-sm mb-2">Expired</p>
+                    <p style="color: #9ca3af;" class="text-sm mb-2">{{ __('messages.expired') }}</p>
                     <p class="text-4xl font-bold" style="color: #ef4444;">
                         @php
                             echo \App\Models\Member::where('active', true)
@@ -169,7 +169,7 @@
                 </div>
 
                 <div class="p-6 rounded-lg text-center" style="background: #1a1f2e; border: 1px solid #10b981;">
-                    <p style="color: #9ca3af;" class="text-sm mb-2">Revenue at Risk</p>
+                    <p style="color: #9ca3af;" class="text-sm mb-2">{{ __('messages.revenue_at_risk') }}</p>
                     <p class="text-4xl font-bold" style="color: #10b981;">
                         $@php
                             $risk = \App\Models\Member::where('active', true)

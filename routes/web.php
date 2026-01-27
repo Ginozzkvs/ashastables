@@ -11,6 +11,16 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\MembershipActivityLimitController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MembershipRenewalController;
+use App\Http\Controllers\PrinterController;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\UserController;
+
+/*
+|--------------------------------------------------------------------------
+| Language Switcher
+|--------------------------------------------------------------------------
+*/
+Route::get('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +71,10 @@ Route::middleware(['auth', 'role:staff|admin'])->prefix('staff')->name('staff.')
     // Receipt
     Route::get('/receipt/{log_id}', [StaffActivityController::class, 'receipt'])
         ->name('receipt');
+    
+    // Printer - for printing receipts
+    Route::post('/printer/print-receipt', [PrinterController::class, 'printReceipt'])
+        ->name('printer.print-receipt');
 });
 
 /*
@@ -72,6 +86,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Members
     Route::resource('members', MemberController::class);
+
+    // Users Management
+    Route::resource('users', UserController::class)->except(['show']);
+    Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     // Membership Renewal (must be BEFORE resource route)
     Route::prefix('memberships/renewal')->name('memberships.renewal.')->group(function () {
@@ -107,6 +125,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports/export/revenue', [ReportController::class, 'exportRevenue'])->name('reports.export.revenue');
     Route::get('/reports/export/members', [ReportController::class, 'exportMembers'])->name('reports.export.members');
     Route::get('/reports/export/activities', [ReportController::class, 'exportActivities'])->name('reports.export.activities');
+
+    // Printer Configuration
+    Route::get('/printer/config', function () {
+        return view('printer.config');
+    })->name('printer.config');
+    Route::get('/printer/usb-printers', [PrinterController::class, 'getUSBPrinters'])->name('printer.usb');
+    Route::post('/printer/test', [PrinterController::class, 'testPrinter'])->name('printer.test');
+    Route::post('/printer/print-test', [PrinterController::class, 'printTestReceipt'])->name('printer.print-test');
+    Route::post('/printer/print-receipt', [PrinterController::class, 'printReceipt'])->name('printer.print-receipt');
 });
 
 /*

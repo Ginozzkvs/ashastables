@@ -27,12 +27,12 @@
     border-radius:8px;
     font-size:18px;
    ">
-   📋 Staff Logs
+   Staff Logs
 </a>
 
 </div>
 
-<h2>📋 Staff Activity Logs</h2>
+<h2>Staff Activity Logs</h2>
 
 <table>
     <tr>
