@@ -399,6 +399,17 @@
         </template>
     </template>
 
+    <!-- NO ACTIVITIES MESSAGE -->
+    <template x-if="member && activities.length === 0 && !loading">
+        <div class="card-base" style="text-align: center; padding: 2rem;">
+            <svg class="w-12 h-12 mx-auto mb-4" style="color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <h3 style="color: #d4af37; margin: 0 0 0.5rem;">{{ __('messages.no_activities_configured') }}</h3>
+            <p style="color: #6b7280; font-size: 0.875rem; margin: 0;">{{ __('messages.no_activities_configured_desc') }}</p>
+        </div>
+    </template>
+
 </div>
 
 <!-- MODAL BACKDROP -->
@@ -482,6 +493,7 @@ function scanComponent() {
         member: null,
         activities: [],
         error: null,
+        loading: false,
 
         // Ethernet printers list and default
         ethernetPrinters: JSON.parse(localStorage.getItem('ethernetPrinters') || '[]'),
@@ -524,6 +536,7 @@ function scanComponent() {
         },
 
         loadMember() {
+            this.loading = true
             fetch('/staff/activity/member', {
                 method: 'POST',
                 headers: {
@@ -534,6 +547,11 @@ function scanComponent() {
             })
             .then(r => r.json())
             .then(data => {
+                this.loading = false
+                console.log('Full API response:', data) // Debug full response
+                console.log('Activities from API:', data.activities) // Debug activities
+                console.log('Activities type:', typeof data.activities) // Debug type
+                console.log('Activities is array:', Array.isArray(data.activities)) // Check if array
                 if (data.error) {
                     this.error = data.error
                     this.member = null
@@ -548,11 +566,14 @@ function scanComponent() {
                 } else {
                     this.error = null
                     this.member = data.member
-                    this.activities = data.activities
+                    // Force convert to array if needed
+                    this.activities = Array.isArray(data.activities) ? data.activities : Object.values(data.activities || {})
+                    console.log('Activities set:', this.activities.length, this.activities) // Debug
                     this.scanLocked = false
                 }
             })
             .catch(err => {
+                this.loading = false
                 this.error = '{{ __('messages.network_error') }}'
                 this.scanLocked = false
                 setTimeout(() => {

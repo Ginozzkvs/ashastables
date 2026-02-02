@@ -196,7 +196,9 @@
                 <p class="page-header-subtext">{{ __('messages.members_directory_subtitle') }}</p>
             </div>
             <div class="header-actions">
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('members.create') }}" class="btn-gold btn-small">+ {{ __('messages.add_member') }}</a>
+                @endif
             </div>
         </div>
 
@@ -219,7 +221,9 @@
                         <th style="width: 12%;">{{ __('messages.membership') }}</th>
                         <th style="width: 12%;">{{ __('messages.period') }}</th>
                         <th style="width: 8%; text-align: center;">{{ __('messages.status') }}</th>
+                        @if(auth()->user()->role === 'admin')
                         <th style="width: 12%; text-align: center;">{{ __('messages.actions') }}</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -241,6 +245,7 @@
                                     <span class="status-inactive">{{ __('messages.inactive') }}</span>
                                 @endif
                             </td>
+                            @if(auth()->user()->role === 'admin')
                             <td style="text-align: center;">
                                 <a href="{{ route('members.edit', $member) }}" class="action-link" style="margin-right: 1rem;">{{ __('messages.edit') }}</a>
                                 <form action="{{ route('members.destroy', $member) }}" method="POST" style="display: inline;" onsubmit="return confirm('{{ __('messages.confirm_delete_member') }}')">
@@ -249,10 +254,11 @@
                                     <button type="submit" class="action-link-danger">{{ __('messages.delete') }}</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="empty-state">
+                            <td colspan="{{ auth()->user()->role === 'admin' ? '8' : '7' }}" class="empty-state">
                                 {{ __('messages.no_members') }}
                             </td>
                         </tr>

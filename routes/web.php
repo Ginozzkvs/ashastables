@@ -75,6 +75,18 @@ Route::middleware(['auth', 'role:staff|admin'])->prefix('staff')->name('staff.')
     // Printer - for printing receipts
     Route::post('/printer/print-receipt', [PrinterController::class, 'printReceipt'])
         ->name('printer.print-receipt');
+
+    // Printer Configuration (accessible by staff and admin)
+    Route::get('/printer/config', function () {
+        return view('printer.config');
+    })->name('printer.config');
+    Route::get('/printer/usb-printers', [PrinterController::class, 'getUSBPrinters'])->name('printer.usb');
+    Route::post('/printer/test', [PrinterController::class, 'testPrinter'])->name('printer.test');
+    Route::post('/printer/print-test', [PrinterController::class, 'printTestReceipt'])->name('printer.print-test');
+
+    // Members (read-only for staff)
+    Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+    Route::get('/members/{member}', [MemberController::class, 'show'])->name('members.show');
 });
 
 /*
@@ -126,14 +138,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/reports/export/members', [ReportController::class, 'exportMembers'])->name('reports.export.members');
     Route::get('/reports/export/activities', [ReportController::class, 'exportActivities'])->name('reports.export.activities');
 
-    // Printer Configuration
-    Route::get('/printer/config', function () {
-        return view('printer.config');
-    })->name('printer.config');
-    Route::get('/printer/usb-printers', [PrinterController::class, 'getUSBPrinters'])->name('printer.usb');
-    Route::post('/printer/test', [PrinterController::class, 'testPrinter'])->name('printer.test');
-    Route::post('/printer/print-test', [PrinterController::class, 'printTestReceipt'])->name('printer.print-test');
-    Route::post('/printer/print-receipt', [PrinterController::class, 'printReceipt'])->name('printer.print-receipt');
 });
 
 /*

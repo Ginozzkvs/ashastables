@@ -28,24 +28,44 @@ class StaffActivityController extends Controller
                 return response()->json(['error' => 'Member not found'], 404);
             }
 
+            // Sync activity balances (creates missing ones if new activities were added to membership)
+            $member->syncActivityBalances();
+
             // Get member's membership to fetch activity limits
             $member->load('membership.activityLimits');
-            $activityLimits = $member->membership->activityLimits->keyBy('activity_id');
+            $activityLimits = $member->membership ? $member->membership->activityLimits->keyBy('activity_id') : collect();
 
             $activities = $member->activityBalances()
                 ->with('activity')
                 ->get()
+                ->filter(function ($balance) {
+                    // Only include balances that have an activity
+                    return $balance->activity !== null;
+                })
                 ->map(function ($balance) use ($activityLimits) {
-                    // Calculate used_count as max_per_year - remaining_count
+                    // Get limit if exists, otherwise estimate from balance data
                     $limit = $activityLimits->get($balance->activity_id);
-                    $maxPerYear = $limit?->max_per_year ?? 0;
-                    $balance->used_count = $maxPerYear - $balance->remaining_count;
+                    
+                    if ($limit) {
+                        $maxPerYear = $limit->max_per_year;
+                    } else {
+                        // Estimate max from remaining + a reasonable used count
+                        // If no limit configured, assume remaining is the total available
+                        $maxPerYear = $balance->remaining_count;
+                    }
+                    
+                    // Calculate used_count 
+                    $balance->used_count = max(0, $maxPerYear - $balance->remaining_count);
+                    $balance->max_per_year = $maxPerYear;
                     return $balance;
-                });
+                })
+                ->values(); // Re-index the collection
 
             return response()->json([
                 'member' => $member,
-                'activities' => $activities
+                'activities' => $activities,
+                'has_membership' => $member->membership !== null,
+                'has_activity_limits' => $activityLimits->isNotEmpty(),
             ]);
         } catch (\Exception $e) {
             \Log::error('findMember error: ' . $e->getMessage());

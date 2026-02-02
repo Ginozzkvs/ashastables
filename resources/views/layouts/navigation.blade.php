@@ -22,13 +22,16 @@
                 <a href="{{ route('members.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('members.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('members.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Members</a>
                 <a href="{{ route('memberships.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('memberships.index') || request()->routeIs('memberships.show') || request()->routeIs('memberships.create') || request()->routeIs('memberships.edit') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('memberships.index') || request()->routeIs('memberships.show') || request()->routeIs('memberships.create') || request()->routeIs('memberships.edit') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Memberships</a>
                 <a href="{{ route('activities.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('activities.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('activities.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Activities</a>
+                <a href="{{ route('membership-activity-limits.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('membership-activity-limits.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('membership-activity-limits.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Activity Limits</a>
                 <a href="{{ route('reports.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('reports.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('reports.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Reports</a>
                 <a href="{{ route('memberships.renewal.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('memberships.renewal.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('memberships.renewal.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Renewal</a>
-                <a href="{{ route('printer.config') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('printer.config') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('printer.config') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Printer</a>
+                <a href="{{ route('staff.printer.config') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('staff.printer.config') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('staff.printer.config') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Printer</a>
                 <a href="{{ route('users.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('users.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('users.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Users</a>
             @endif
             @if(auth()->user() && auth()->user()->role === 'staff')
                 <a href="{{ route('staff.scan') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('staff.scan') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('staff.scan') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Member Scan</a>
+                <a href="{{ route('staff.members.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('staff.members.*') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('staff.members.*') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Members</a>
+                <a href="{{ route('staff.printer.config') }}" class="block px-3 py-2 rounded-md text-sm font-medium" style="color: {{ request()->routeIs('staff.printer.config') ? '#d4af37' : '#e0e0e0' }}; {{ request()->routeIs('staff.printer.config') ? 'background: rgba(212, 175, 55, 0.1);' : '' }}">Printer</a>
             @endif
         </div>
         <div class="px-4 py-3" style="border-top: 1px solid #d4af37;">
@@ -92,6 +95,11 @@
                 <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.activities') }}</span>
             </a>
 
+            <a href="{{ route('membership-activity-limits.index') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('membership-activity-limits.*') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.activity_limits') }}">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.activity_limits') }}</span>
+            </a>
+
             <a href="{{ route('reports.index') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('reports.*') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.reports') }}">
                 <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.reports') }}</span>
@@ -102,7 +110,7 @@
                 <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.renewal') }}</span>
             </a>
 
-            <a href="{{ route('printer.config') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('printer.config') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.printer') }}">
+            <a href="{{ route('staff.printer.config') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('staff.printer.config') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.printer') }}">
                 <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.printer') }}</span>
             </a>
@@ -117,6 +125,16 @@
             <a href="{{ route('staff.scan') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('staff.scan') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.staff_scan') }}">
                 <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
                 <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.staff_scan') }}</span>
+            </a>
+
+            <a href="{{ route('staff.members.index') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('staff.members.*') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.members') }}">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.members') }}</span>
+            </a>
+
+            <a href="{{ route('staff.printer.config') }}" class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group" style="{{ request()->routeIs('staff.printer.config') ? 'background: rgba(212, 175, 55, 0.15); color: #d4af37; border-left: 3px solid #d4af37;' : 'color: #e0e0e0;' }}" title="{{ __('messages.printer') }}">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span x-show="expanded" x-transition class="whitespace-nowrap">{{ __('messages.printer') }}</span>
             </a>
         @endif
     </nav>

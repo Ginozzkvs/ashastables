@@ -69,6 +69,35 @@ class Member extends Model
         return now()->diffInDays($this->expiry_date);
     }
 
+    /**
+     * Sync activity balances with membership's activity limits.
+     * Creates missing balances for new activities added to the membership.
+     */
+    public function syncActivityBalances()
+    {
+        $membership = $this->membership()->with('activityLimits')->first();
+
+        if (!$membership || $membership->activityLimits->isEmpty()) {
+            return;
+        }
+
+        // Get existing activity IDs for this member
+        $existingActivityIds = $this->activityBalances()->pluck('activity_id')->toArray();
+
+        // Create balances for any missing activities
+        foreach ($membership->activityLimits as $limit) {
+            if (!in_array($limit->activity_id, $existingActivityIds)) {
+                MemberActivityBalance::create([
+                    'member_id'        => $this->card_id,
+                    'activity_id'      => $limit->activity_id,
+                    'remaining_count'  => $limit->max_per_year,
+                    'used_today'       => 0,
+                    'last_used_date'   => null,
+                ]);
+            }
+        }
+    }
+
     public static function generateCardId()
     {
         $lastMember = self::latest('created_at')->first();

@@ -97,7 +97,7 @@
     }
 
     function refreshPrinters() {
-        fetch('{{ route("printer.usb") }}')
+        fetch('{{ route("staff.printer.usb") }}')
             .then(r => r.json())
             .then(data => {
                 const select = document.getElementById('printerSelect');
@@ -255,7 +255,7 @@
             data.ip_address = printer.ip;
         }
 
-        fetch('{{ route("printer.test") }}', {
+        fetch('{{ route("staff.printer.test") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -290,7 +290,7 @@
             data.ip_address = printer.ip;
         }
 
-        fetch('{{ route("printer.print-test") }}', {
+        fetch('{{ route("staff.printer.print-test") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
