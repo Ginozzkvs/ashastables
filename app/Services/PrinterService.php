@@ -165,7 +165,7 @@ class PrinterService
     }
 
     /**
-     * Print via Ethernet (Windows - uses network share)
+     * Print via Ethernet (Windows - tries multiple methods)
      */
     private function printEthernet($content)
     {
@@ -173,49 +173,33 @@ class PrinterService
             throw new Exception("Printer IP address not set");
         }
 
-        // Save content to temp file
-        $tempFile = tempnam(sys_get_temp_dir(), 'print_');
-        file_put_contents($tempFile, $content);
+        $errors = [];
 
-        // Windows: Print using network path \\IP\PrinterShare or direct to IP
+        // Try common thermal printer ports
+        $ports = [9100, 9101, 9102, 9103, 515, 631, 6101, 4000, 8000];
+        
+        foreach ($ports as $port) {
+            $socket = @fsockopen($this->ipAddress, $port, $errno, $errstr, 2);
+            if ($socket) {
+                fwrite($socket, $content);
+                fclose($socket);
+                return true;
+            }
+        }
+        $errors[] = "No open printer port found";
+
+        // Method 2: Try Windows network share
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            // Try using Windows print command with IP address
-            // Option 1: Use copy to printer port (LPT or network)
             $printerPath = "\\\\" . $this->ipAddress . "\\Receipt";
-            
-            // Try direct file output to network printer
             $handle = @fopen($printerPath, "w");
             if ($handle) {
                 fwrite($handle, $content);
                 fclose($handle);
-                @unlink($tempFile);
                 return true;
             }
-            
-            // Fallback: Use print command
-            $cmd = 'print /d:"' . $printerPath . '" "' . $tempFile . '" 2>&1';
-            exec($cmd, $output, $returnVar);
-            
-            @unlink($tempFile);
-            
-            if ($returnVar !== 0) {
-                throw new Exception("Failed to print via network: " . implode("\n", $output));
-            }
-            
-            return true;
         }
 
-        // For Linux/Mac - use lpr with -H option for IP
-        $cmd = "lpr -H " . escapeshellarg($this->ipAddress) . " " . escapeshellarg($tempFile);
-        exec($cmd, $output, $returnVar);
-        
-        @unlink($tempFile);
-
-        if ($returnVar !== 0) {
-            throw new Exception("Failed to print: " . implode("\n", $output));
-        }
-
-        return true;
+        throw new Exception("Failed to print. Could not connect to " . $this->ipAddress . " on any printer port");
     }
 
     /**
@@ -268,12 +252,24 @@ class PrinterService
     {
         try {
             if ($this->isEthernet) {
-                // Test by attempting to reach the printer IP
-                $ping = exec("ping -n 1 -w 1000 " . escapeshellarg($this->ipAddress), $output, $returnVar);
-                if ($returnVar !== 0) {
-                    throw new Exception("Cannot reach printer at " . $this->ipAddress);
+                // Scan common printer ports
+                $ports = [9100, 9101, 9102, 9103, 515, 631, 6101, 4000, 8000];
+                
+                foreach ($ports as $port) {
+                    $socket = @fsockopen($this->ipAddress, $port, $errno, $errstr, 1);
+                    if ($socket) {
+                        fclose($socket);
+                        return true; // Found open port
+                    }
                 }
-                return true;
+                
+                // Fallback to ping
+                exec("ping -n 1 -w 1000 " . escapeshellarg($this->ipAddress), $output, $returnVar);
+                if ($returnVar === 0) {
+                    return true; // IP reachable
+                }
+                
+                throw new Exception("Cannot connect to printer at " . $this->ipAddress);
             } else {
                 return true; // USB will error if unavailable
             }
