@@ -9,8 +9,6 @@ class PrinterService
     private $printerName;
     private $isEthernet = false;
     private $ipAddress;
-    private $port = 9100; // Default thermal printer port
-    private $socket;
 
     /**
      * Initialize USB Printer
@@ -25,23 +23,12 @@ class PrinterService
 
     /**
      * Initialize Ethernet Printer
-     * @param string $ipAddress - Printer IP address
+     * @param string $ipAddress - Printer IP address or network share path
      */
     public function connectEthernet($ipAddress)
     {
         $this->ipAddress = $ipAddress;
-        $this->port = 9100; // Always use 9100
         $this->isEthernet = true;
-
-        // Connect with longer timeout for reliability
-        $this->socket = @fsockopen($ipAddress, $this->port, $errno, $errstr, 10);
-        if (!$this->socket) {
-            throw new Exception("Failed to connect to printer at $ipAddress:$this->port - $errstr");
-        }
-        
-        // Set socket timeout
-        stream_set_timeout($this->socket, 10);
-
         return $this;
     }
 
@@ -178,39 +165,54 @@ class PrinterService
     }
 
     /**
-     * Print via Ethernet
+     * Print via Ethernet (Windows - uses network share)
      */
     private function printEthernet($content)
     {
-        if (!$this->socket) {
-            throw new Exception("Printer not connected");
+        if (!$this->ipAddress) {
+            throw new Exception("Printer IP address not set");
         }
 
-        // Send data in chunks
-        $chunkSize = 1024;
-        $totalBytes = 0;
-        $contentLength = strlen($content);
-        
-        for ($i = 0; $i < $contentLength; $i += $chunkSize) {
-            $chunk = substr($content, $i, $chunkSize);
-            $written = fwrite($this->socket, $chunk);
+        // Save content to temp file
+        $tempFile = tempnam(sys_get_temp_dir(), 'print_');
+        file_put_contents($tempFile, $content);
+
+        // Windows: Print using network path \\IP\PrinterShare or direct to IP
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            // Try using Windows print command with IP address
+            // Option 1: Use copy to printer port (LPT or network)
+            $printerPath = "\\\\" . $this->ipAddress . "\\Receipt";
             
-            if ($written === false) {
-                throw new Exception("Failed to send data to ethernet printer");
+            // Try direct file output to network printer
+            $handle = @fopen($printerPath, "w");
+            if ($handle) {
+                fwrite($handle, $content);
+                fclose($handle);
+                @unlink($tempFile);
+                return true;
             }
             
-            $totalBytes += $written;
-            usleep(100000); // 100ms delay between chunks
+            // Fallback: Use print command
+            $cmd = 'print /d:"' . $printerPath . '" "' . $tempFile . '" 2>&1';
+            exec($cmd, $output, $returnVar);
+            
+            @unlink($tempFile);
+            
+            if ($returnVar !== 0) {
+                throw new Exception("Failed to print via network: " . implode("\n", $output));
+            }
+            
+            return true;
         }
 
-        // Flush the socket
-        fflush($this->socket);
-        usleep(500000); // 500ms to allow printer to process
+        // For Linux/Mac - use lpr with -H option for IP
+        $cmd = "lpr -H " . escapeshellarg($this->ipAddress) . " " . escapeshellarg($tempFile);
+        exec($cmd, $output, $returnVar);
         
-        // Close socket after printing
-        if ($this->socket) {
-            fclose($this->socket);
-            $this->socket = null;
+        @unlink($tempFile);
+
+        if ($returnVar !== 0) {
+            throw new Exception("Failed to print: " . implode("\n", $output));
         }
 
         return true;
@@ -266,8 +268,11 @@ class PrinterService
     {
         try {
             if ($this->isEthernet) {
-                $test = "\x1B\x40"; // Reset command
-                fwrite($this->socket, $test);
+                // Test by attempting to reach the printer IP
+                $ping = exec("ping -n 1 -w 1000 " . escapeshellarg($this->ipAddress), $output, $returnVar);
+                if ($returnVar !== 0) {
+                    throw new Exception("Cannot reach printer at " . $this->ipAddress);
+                }
                 return true;
             } else {
                 return true; // USB will error if unavailable
@@ -282,9 +287,7 @@ class PrinterService
      */
     public function disconnect()
     {
-        if ($this->isEthernet && $this->socket) {
-            fclose($this->socket);
-        }
+        // No persistent connection to close
     }
 
     /**
