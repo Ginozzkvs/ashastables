@@ -68,6 +68,17 @@
         <div id="statusMessage" style="margin-bottom: 1rem; padding: 1rem; border-radius: 0.375rem; display: none;">
         </div>
 
+        <!-- Logo Settings -->
+        <div style="margin-bottom: 1rem; padding: 1rem; border-radius: 0.375rem; border: 1px dashed #d4af37; background: rgba(212,175,55,0.03);">
+            <label style="display:block; color:#d4af37; font-weight:600; margin-bottom:0.5rem;">Logo (optional)</label>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input id="logoPath" type="text" placeholder="public/images/logo.png or absolute path" style="flex:1; padding:0.5rem; background:#0f1419; border:1px solid #d4af37; color:#e0e0e0; border-radius:0.375rem;">
+                <input id="logoWidth" type="number" placeholder="Width" value="384" style="width:6rem; padding:0.5rem; background:#0f1419; border:1px solid #d4af37; color:#e0e0e0; border-radius:0.375rem;">
+                <button onclick="saveLogoSettings()" style="padding:0.5rem 0.75rem; background:#d4af37; color:#0f1419; border:none; border-radius:0.375rem; cursor:pointer;">Save</button>
+            </div>
+            <p style="color:#9ca3af; font-size:0.85rem; margin-top:0.5rem;">Set a custom logo path and maximum width in pixels. If left empty, the server will try <strong>public/images/logo.png</strong>.</p>
+        </div>
+
         <!-- Action Buttons -->
         <div style="display: flex; gap: 1rem;">
             <button onclick="testPrinter()" style="flex: 1; padding: 1rem; background: #d4af37; color: #0f1419; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; font-size: 1rem;">
@@ -90,6 +101,8 @@
     const csrfToken = '{{ csrf_token() }}';
     let printersList = JSON.parse(localStorage.getItem('ethernetPrinters') || '[]');
     let defaultPrinter = localStorage.getItem('defaultEthernetPrinter') || '';
+        let logoPath = localStorage.getItem('printerLogoPath') || '';
+        let logoWidth = localStorage.getItem('printerLogoWidth') || '384';
 
     function toggleConnectionType(type) {
         document.getElementById('usbSection').style.display = type === 'usb' ? 'block' : 'none';
@@ -116,6 +129,16 @@
                     option.textContent = 'No printers found';
                     select.appendChild(option);
                 }
+
+                    function saveLogoSettings() {
+                        const path = document.getElementById('logoPath').value.trim();
+                        const width = document.getElementById('logoWidth').value.trim() || '384';
+                        localStorage.setItem('printerLogoPath', path);
+                        localStorage.setItem('printerLogoWidth', width);
+                        logoPath = path;
+                        logoWidth = width;
+                        showStatus('Logo settings saved', 'success');
+                    }
             })
             .catch(err => showStatus('Failed to load printers', 'error'));
     }
@@ -262,6 +285,9 @@
         }
 
         fetch('{{ route("staff.printer.test") }}', {
+            // include logo settings if present
+            if (logoPath) data.logo_path = logoPath;
+            if (logoWidth) data.logo_width = parseInt(logoWidth, 10);
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -298,6 +324,9 @@
         }
 
         fetch('{{ route("staff.printer.print-test") }}', {
+            // include logo settings if present
+            if (logoPath) data.logo_path = logoPath;
+            if (logoWidth) data.logo_width = parseInt(logoWidth, 10);
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -333,6 +362,11 @@
     window.addEventListener('load', () => {
         refreshPrinters();
         renderPrintersList();
+        // populate logo inputs from stored settings
+        const lp = document.getElementById('logoPath');
+        const lw = document.getElementById('logoWidth');
+        if (lp) lp.value = logoPath || '';
+        if (lw) lw.value = logoWidth || '384';
     });
 </script>
 @endsection

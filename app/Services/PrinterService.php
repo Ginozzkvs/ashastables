@@ -10,6 +10,8 @@ class PrinterService
     private $isEthernet = false;
     private $ipAddress;
     private $port = null; // optional custom port for ethernet
+    private $logoPath = null;
+    private $logoMaxWidth = 384;
 
     /**
      * Initialize USB Printer
@@ -42,6 +44,24 @@ class PrinterService
     }
 
     /**
+     * Optional: set a custom logo path (absolute or relative to public/)
+     */
+    public function setLogoPath($path)
+    {
+        $this->logoPath = $path;
+        return $this;
+    }
+
+    /**
+     * Optional: set the maximum logo width in pixels for raster conversion
+     */
+    public function setLogoMaxWidth($width)
+    {
+        $this->logoMaxWidth = (int) $width;
+        return $this;
+    }
+
+    /**
      * Print Receipt
      */
     public function printReceipt($receiptData)
@@ -62,13 +82,14 @@ class PrinterService
         // Initialize printer
         $receipt .= "\x1B\x40"; // ESC @ (Initialize)
 
-        // Attempt to print logo from public/images/logo.png if available
+        // Attempt to print logo if provided or default exists
         try {
-            $logoPath = function_exists('public_path') ? public_path('images/logo.png') : __DIR__ . '/../../public/images/logo.png';
-            if (file_exists($logoPath)) {
+            // prefer explicitly set logo path, otherwise look for public/images/logo.png
+            $logoPath = $this->logoPath ?: (function_exists('public_path') ? public_path('images/logo.png') : __DIR__ . '/../../public/images/logo.png');
+            if ($logoPath && file_exists($logoPath)) {
                 // center alignment for logo
                 $receipt .= "\x1B\x61\x01"; // Center
-                $receipt .= $this->imageToEscPos($logoPath);
+                $receipt .= $this->imageToEscPos($logoPath, $this->logoMaxWidth);
                 $receipt .= "\n"; // small gap after logo
                 $receipt .= "\x1B\x61\x00"; // Left align back
             }

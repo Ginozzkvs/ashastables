@@ -79,6 +79,16 @@ class PrinterController extends Controller
                 $printer->connectEthernet($ip, $port);
             }
 
+            // Apply optional logo settings passed from client
+            $logoPath = $request->input('logo_path');
+            $logoWidth = $request->input('logo_width');
+            if ($logoPath) {
+                $printer->setLogoPath($logoPath);
+            }
+            if ($logoWidth) {
+                $printer->setLogoMaxWidth($logoWidth);
+            }
+
             $testData = [
                 'member_name' => 'Test Member',
                 'card_uid' => 'ABC123456',
@@ -143,6 +153,15 @@ class PrinterController extends Controller
                     $port = $request->input('port');
                     $printer->connectEthernet($ipAddress, $port);
                 }
+            // Apply optional logo settings for actual receipts
+            $logoPath = $request->input('logo_path');
+            $logoWidth = $request->input('logo_width');
+            if ($logoPath) {
+                $printer->setLogoPath($logoPath);
+            }
+            if ($logoWidth) {
+                $printer->setLogoMaxWidth($logoWidth);
+            }
             $receiptData = [
                 'member_name' => $receipt['member_name'] ?? 'Member',
                 'card_uid' => $receipt['member_id'] ?? '',
