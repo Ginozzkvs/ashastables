@@ -62,6 +62,20 @@ class PrinterService
         // Initialize printer
         $receipt .= "\x1B\x40"; // ESC @ (Initialize)
 
+        // Attempt to print logo from public/images/logo.png if available
+        try {
+            $logoPath = function_exists('public_path') ? public_path('images/logo.png') : __DIR__ . '/../../public/images/logo.png';
+            if (file_exists($logoPath)) {
+                // center alignment for logo
+                $receipt .= "\x1B\x61\x01"; // Center
+                $receipt .= $this->imageToEscPos($logoPath);
+                $receipt .= "\n"; // small gap after logo
+                $receipt .= "\x1B\x61\x00"; // Left align back
+            }
+        } catch (Exception $e) {
+            // continue without logo if conversion fails
+        }
+
         // ============ HEADER ============
         $receipt .= "\x1B\x61\x01"; // Center alignment
         $receipt .= "\x1B\x45\x01"; // Bold on
@@ -171,6 +185,80 @@ class PrinterService
         } else {
             return $this->printUSB($content);
         }
+    }
+
+    /**
+     * Convert image to ESC/POS raster bit image (GS v 0) and return bytes
+     * Requires GD extension. Resizes image to max width (pixels) if larger.
+     * @param string $imagePath
+     * @param int $maxWidth
+     * @return string
+     */
+    private function imageToEscPos($imagePath, $maxWidth = 384)
+    {
+        if (!function_exists('imagecreatefromstring')) {
+            return '';
+        }
+
+        $contents = @file_get_contents($imagePath);
+        if ($contents === false) return '';
+
+        $img = @imagecreatefromstring($contents);
+        if (!$img) return '';
+
+        $width = imagesx($img);
+        $height = imagesy($img);
+
+        // resize if wider than maxWidth
+        if ($width > $maxWidth) {
+            $newWidth = $maxWidth;
+            $newHeight = (int) round($height * ($newWidth / $width));
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            // fill white
+            $white = imagecolorallocate($resized, 255, 255, 255);
+            imagefilledrectangle($resized, 0, 0, $newWidth, $newHeight, $white);
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            imagedestroy($img);
+            $img = $resized;
+            $width = $newWidth;
+            $height = $newHeight;
+        }
+
+        // convert to 1-bit bitmap (threshold)
+        $widthBytes = (int) ceil($width / 8);
+        $data = "";
+
+        for ($y = 0; $y < $height; $y++) {
+            $row = "";
+            for ($bx = 0; $bx < $widthBytes; $bx++) {
+                $byte = 0;
+                for ($bit = 0; $bit < 8; $bit++) {
+                    $x = $bx * 8 + $bit;
+                    if ($x < $width) {
+                        $rgb = imagecolorat($img, $x, $y);
+                        $r = ($rgb >> 16) & 0xFF;
+                        $g = ($rgb >> 8) & 0xFF;
+                        $b = $rgb & 0xFF;
+                        // luminance
+                        $lum = (int) (0.2126 * $r + 0.7152 * $g + 0.0722 * $b);
+                        if ($lum < 127) { // dark pixel -> black
+                            $byte |= (0x80 >> $bit);
+                        }
+                    }
+                }
+                $row .= chr($byte);
+            }
+            $data .= $row;
+        }
+
+        // GS v 0 raster bitmap: 1D 76 30 00 [xL xH yL yH] + data
+        $xLxH = pack('v', $widthBytes);
+        $yLyH = pack('v', $height);
+        $cmd = "\x1D\x76\x30\x00" . $xLxH . $yLyH . $data;
+
+        imagedestroy($img);
+
+        return $cmd;
     }
 
     /**
