@@ -9,6 +9,7 @@ class PrinterService
     private $printerName;
     private $isEthernet = false;
     private $ipAddress;
+    private $port = null; // optional custom port for ethernet
 
     /**
      * Initialize USB Printer
@@ -25,10 +26,18 @@ class PrinterService
      * Initialize Ethernet Printer
      * @param string $ipAddress - Printer IP address or network share path
      */
-    public function connectEthernet($ipAddress)
+    /**
+     * Initialize Ethernet Printer
+     * @param string $ipAddress - Printer IP address or network share path
+     * @param int|null $port - optional custom port to connect to (raw/9100 etc)
+     */
+    public function connectEthernet($ipAddress, $port = null)
     {
         $this->ipAddress = $ipAddress;
         $this->isEthernet = true;
+        if ($port) {
+            $this->port = (int) $port;
+        }
         return $this;
     }
 
@@ -175,8 +184,13 @@ class PrinterService
 
         $errors = [];
 
-        // Try common thermal printer ports
-        $ports = [9100, 9101, 9102, 9103, 515, 631, 6101, 4000, 8000];
+        // Try custom port first if provided
+        $ports = [];
+        if ($this->port) {
+            $ports[] = $this->port;
+        }
+        // then fall back to common thermal printer ports
+        $ports = array_merge($ports, [9100, 9101, 9102, 9103, 515, 631, 6101, 4000, 8000]);
         
         foreach ($ports as $port) {
             $socket = @fsockopen($this->ipAddress, $port, $errno, $errstr, 2);
@@ -252,23 +266,36 @@ class PrinterService
     {
         try {
             if ($this->isEthernet) {
+                // Scan custom port first
+                $ports = [];
+                if ($this->port) {
+                    $ports[] = $this->port;
+                }
+
                 // Scan common printer ports
-                $ports = [9100, 9101, 9102, 9103, 515, 631, 6101, 4000, 8000];
+                $ports = array_merge($ports, [9100, 9101, 9102, 9103, 515, 631, 6101, 4000, 8000]);
                 
+                $foundPort = false;
                 foreach ($ports as $port) {
                     $socket = @fsockopen($this->ipAddress, $port, $errno, $errstr, 1);
                     if ($socket) {
                         fclose($socket);
-                        return true; // Found open port
+                        $foundPort = true;
+                        break;
                     }
                 }
-                
-                // Fallback to ping
+
+                if ($foundPort) {
+                    return true; // Found usable printer port
+                }
+
+                // Fallback to ping only
                 exec("ping -n 1 -w 1000 " . escapeshellarg($this->ipAddress), $output, $returnVar);
                 if ($returnVar === 0) {
-                    return true; // IP reachable
+                    // reachable but nothing listening on expected ports
+                    throw new Exception("Printer reachable via ping but no open printer port found");
                 }
-                
+
                 throw new Exception("Cannot connect to printer at " . $this->ipAddress);
             } else {
                 return true; // USB will error if unavailable

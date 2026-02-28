@@ -695,10 +695,14 @@ function scanComponent() {
             })
             .then(r => r.json())
             .then(result => {
-                console.log('Print response:', result)
+                console.log('Print response:', result);
+                if (!result.success) {
+                    alert('Print failed: ' + (result.message || 'unknown error'));
+                }
             })
             .catch(err => {
-                console.error('Print error:', err)
+                console.error('Print error:', err);
+                alert('Print failed: network or server error');
             })
         },
 

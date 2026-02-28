@@ -47,6 +47,7 @@
                 <label style="display: block; color: #d4af37; font-weight: 600; margin-bottom: 0.5rem;">Add New Printer:</label>
                 <div style="display: flex; gap: 0.5rem;">
                     <input type="text" id="newPrinterIP" placeholder="192.168.1.100" style="flex: 1; padding: 0.75rem; background: #0f1419; border: 1px solid #d4af37; color: #e0e0e0; border-radius: 0.375rem;">
+                    <input type="text" id="newPrinterPort" placeholder="Port (e.g. 9100)" style="width: 5rem; padding: 0.75rem; background: #0f1419; border: 1px solid #d4af37; color: #e0e0e0; border-radius: 0.375rem;">
                     <input type="text" id="newPrinterName" placeholder="Printer Name" style="flex: 1; padding: 0.75rem; background: #0f1419; border: 1px solid #d4af37; color: #e0e0e0; border-radius: 0.375rem;">
                     <button onclick="addPrinterIP()" style="padding: 0.75rem 1.5rem; background: #10b981; color: white; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">
                         Add
@@ -121,6 +122,7 @@
 
     function addPrinterIP() {
         const ip = document.getElementById('newPrinterIP').value.trim();
+        const port = document.getElementById('newPrinterPort').value.trim();
         const name = document.getElementById('newPrinterName').value.trim();
 
         if (!ip) {
@@ -134,17 +136,16 @@
         }
 
         // Check if IP already exists
-        if (printersList.some(p => p.ip === ip)) {
-            showStatus('This IP address is already saved', 'error');
+        if (printersList.some(p => p.ip === ip && p.port === port)) {
+            showStatus('This IP/port combination is already saved', 'error');
             return;
         }
 
-        printersList.push({ id: Date.now(), ip, name });
+        printersList.push({ id: Date.now(), ip, port, name });
         savePrinters();
         
         document.getElementById('newPrinterIP').value = '';
-        document.getElementById('newPrinterName').value = '';
-        showStatus('Printer added successfully!', 'success');
+        document.getElementById('newPrinterPort').value = '';
     }
 
     function editPrinterIP(id) {
@@ -154,15 +155,19 @@
         const newIP = prompt('Edit IP address:', printer.ip);
         if (!newIP) return;
 
+        const newPort = prompt('Edit port (leave blank for default):', printer.port || '');
+        if (newPort === null) return;
+
         const newName = prompt('Edit printer name:', printer.name);
         if (!newName) return;
 
-        if (printersList.some(p => p.ip === newIP && p.id !== id)) {
-            showStatus('This IP address is already saved', 'error');
+        if (printersList.some(p => p.ip === newIP && p.port === newPort && p.id !== id)) {
+            showStatus('This IP/port combination is already saved', 'error');
             return;
         }
 
         printer.ip = newIP.trim();
+        printer.port = newPort.trim();
         printer.name = newName.trim();
         savePrinters();
         showStatus('Printer updated!', 'success');
@@ -211,7 +216,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: start;">
                     <div style="flex: 1;">
                         <p style="margin: 0; color: #d4af37; font-weight: 600;">${printer.name}</p>
-                        <p style="margin: 0.25rem 0 0; color: #9ca3af; font-size: 0.85rem; font-family: 'Courier New', monospace;">${printer.ip}</p>
+                        <p style="margin: 0.25rem 0 0; color: #9ca3af; font-size: 0.85rem; font-family: 'Courier New', monospace;">${printer.ip}${printer.port ? ':' + printer.port : ''}</p>
                         ${defaultPrinter === printer.id.toString() ? '<p style="margin: 0.5rem 0 0; color: #10b981; font-size: 0.8rem; font-weight: 600;">DEFAULT</p>' : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
@@ -223,11 +228,11 @@
             </div>
         `).join('');
 
-        // Update default printer dropdown
+        // update default printer dropdown
         printersList.forEach(printer => {
             const option = document.createElement('option');
             option.value = printer.id;
-            option.textContent = `${printer.name} (${printer.ip})`;
+            option.textContent = `${printer.name} (${printer.ip}${printer.port ? ':'+printer.port : ''})`;
             option.selected = defaultPrinter === printer.id.toString();
             selectDefault.appendChild(option);
         });
@@ -253,6 +258,7 @@
             }
             const printer = printersList.find(p => p.id.toString() === selectedId);
             data.ip_address = printer.ip;
+            if (printer.port) data.port = printer.port;
         }
 
         fetch('{{ route("staff.printer.test") }}', {
@@ -288,6 +294,7 @@
             }
             const printer = printersList.find(p => p.id.toString() === selectedId);
             data.ip_address = printer.ip;
+            if (printer.port) data.port = printer.port;
         }
 
         fetch('{{ route("staff.printer.print-test") }}', {

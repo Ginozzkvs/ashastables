@@ -38,10 +38,13 @@ class PrinterController extends Controller
                 $printerName = $request->input('printer_name');
                 $printer = new PrinterService();
                 $printer->connectUSB($printerName);
+                \Log::info('Testing USB printer', ['name' => $printerName]);
             } else {
                 $ipAddress = $request->input('ip_address');
+                $port = $request->input('port');
                 $printer = new PrinterService();
-                $printer->connectEthernet($ipAddress);
+                $printer->connectEthernet($ipAddress, $port);
+                \Log::info('Testing Ethernet printer', ['ip' => $ipAddress, 'port' => $port]);
             }
 
             $printer->testConnection();
@@ -51,6 +54,7 @@ class PrinterController extends Controller
                 'message' => 'Printer connected successfully'
             ]);
         } catch (\Exception $e) {
+            \Log::error('Printer test failed: '.$e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -70,7 +74,9 @@ class PrinterController extends Controller
             if ($type === 'usb') {
                 $printer->connectUSB($request->input('printer_name'));
             } else {
-                $printer->connectEthernet($request->input('ip_address'));
+                $ip = $request->input('ip_address');
+                $port = $request->input('port');
+                $printer->connectEthernet($ip, $port);
             }
 
             $testData = [
@@ -82,6 +88,7 @@ class PrinterController extends Controller
                 'used_count' => 19
             ];
 
+            \Log::info('Printing test receipt', $testData);
             $printer->printReceipt($testData);
 
             return response()->json([
@@ -89,6 +96,7 @@ class PrinterController extends Controller
                 'message' => 'Test receipt printed successfully'
             ]);
         } catch (\Exception $e) {
+            \Log::error('Test print failed: '.$e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -104,6 +112,7 @@ class PrinterController extends Controller
         try {
             $type = $request->input('type');
             $receipt = $request->input('receipt');
+            $port = $request->input('port');
             
             if (!$receipt) {
                 return response()->json([
@@ -115,25 +124,25 @@ class PrinterController extends Controller
             $printer = new PrinterService();
 
             if ($type === 'usb') {
-                $printerName = $request->input('printer_name');
-                if (!$printerName) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No USB printer selected'
-                    ], 400);
+                    $printerName = $request->input('printer_name');
+                    if (!$printerName) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'No USB printer selected'
+                        ], 400);
+                    }
+                    $printer->connectUSB($printerName);
+                } else {
+                    $ipAddress = $request->input('ip_address');
+                    if (!$ipAddress) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'No Ethernet printer IP provided'
+                        ], 400);
+                    }
+                    $port = $request->input('port');
+                    $printer->connectEthernet($ipAddress, $port);
                 }
-                $printer->connectUSB($printerName);
-            } else {
-                $ipAddress = $request->input('ip_address');
-                if (!$ipAddress) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No Ethernet printer IP provided'
-                    ], 400);
-                }
-                $printer->connectEthernet($ipAddress);
-            }
-
             $receiptData = [
                 'member_name' => $receipt['member_name'] ?? 'Member',
                 'card_uid' => $receipt['member_id'] ?? '',
@@ -143,11 +152,14 @@ class PrinterController extends Controller
                 'used_count' => $receipt['used_sessions'] ?? 0
             ];
 
-            $printer->printReceipt($receiptData);
+            // log the data we send to the printer for debugging
+            \Log::info('Printing receipt', $receiptData);
+
+            $success = $printer->printReceipt($receiptData);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Receipt printed successfully'
+                'success' => $success,
+                'message' => $success ? 'Receipt printed successfully' : 'Printer returned false'
             ]);
         } catch (\Exception $e) {
             \Log::error('Print Error: ' . $e->getMessage());

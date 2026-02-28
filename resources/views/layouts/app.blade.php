@@ -12,15 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@100..900&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <style>
-        * {
-            font-family: 'Noto Sans Lao', sans-serif !important;
-        }
-    </style>
 </head>
 
-<body class="font-sans antialiased" style="background: #0f1419; font-family: 'Noto Sans Lao', sans-serif;">
+<body class="font-sans antialiased bg-dark text-white">
     <div x-data="{ sidebarExpanded: localStorage.getItem('sidebarExpanded') === 'true' }" 
          @sidebar-toggled.window="sidebarExpanded = $event.detail"
          class="min-h-screen transition-all duration-300"
@@ -33,14 +27,14 @@
         <div class="lg:hidden h-16"></div>
 
         @isset($header)
-            <header style="background: #1a1f2e; border-bottom: 1px solid #d4af37;">
+            <header class="bg-dark-card border-b border-gold">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>
             </header>
         @endisset
 
-        <main class="py-10" style="background: #0f1419;">
+        <main class="py-10 bg-dark">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 @yield('content')
             </div>
