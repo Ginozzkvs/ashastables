@@ -138,6 +138,20 @@
     .action-link-danger:hover {
         color: #f87171;
     }
+
+    .action-link-warning {
+        color: #f59e0b;
+        border: none;
+        background: none;
+        padding: 0;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .action-link-warning:hover {
+        color: #fbbf24;
+    }
     
     .page-header {
         display: flex;
@@ -247,8 +261,15 @@
                             </td>
                             @if(auth()->user()->role === 'admin')
                             <td style="text-align: center;">
-                                <a href="{{ route('members.edit', $member) }}" class="action-link" style="margin-right: 1rem;">{{ __('messages.edit') }}</a>
-                                <form action="{{ route('members.destroy', $member) }}" method="POST" style="display: inline;" onsubmit="return confirm('{{ __('messages.confirm_delete_member') }}')">
+                                <a href="{{ route('members.edit', $member) }}" class="action-link" style="margin-right: 0.75rem;">{{ __('messages.edit') }}</a>
+                                @if($member->active)
+                                <form action="{{ route('members.deactivate', $member) }}" method="POST" style="display: inline;" onsubmit="return confirm('{{ __('messages.confirm_deactivate_member') }}')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="action-link-warning" style="margin-right: 0.75rem;">{{ __('messages.deactivate') }}</button>
+                                </form>
+                                @endif
+                                <form action="{{ route('members.destroy', $member) }}" method="POST" style="display: inline;" onsubmit="return confirm('{{ __('messages.confirm_delete_member_permanent') }}')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="action-link-danger">{{ __('messages.delete') }}</button>

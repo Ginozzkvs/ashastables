@@ -81,19 +81,37 @@ class Member extends Model
             return;
         }
 
-        // Get existing activity IDs for this member
-        $existingActivityIds = $this->activityBalances()->pluck('activity_id')->toArray();
+        // Remove duplicates first
+        $this->removeDuplicateBalances();
 
-        // Create balances for any missing activities
+        // Create balances for any missing activities (won't duplicate thanks to firstOrCreate)
         foreach ($membership->activityLimits as $limit) {
-            if (!in_array($limit->activity_id, $existingActivityIds)) {
-                MemberActivityBalance::create([
-                    'member_id'        => $this->card_id,
-                    'activity_id'      => $limit->activity_id,
-                    'remaining_count'  => $limit->max_per_year,
-                    'used_today'       => 0,
-                    'last_used_date'   => null,
-                ]);
+            MemberActivityBalance::firstOrCreate(
+                [
+                    'member_id'   => $this->card_id,
+                    'activity_id' => $limit->activity_id,
+                ],
+                [
+                    'remaining_count' => $limit->max_per_year,
+                    'used_today'      => 0,
+                    'last_used_date'  => null,
+                ]
+            );
+        }
+    }
+
+    /**
+     * Remove duplicate activity balances, keeping the one with the lowest remaining_count (most used).
+     */
+    private function removeDuplicateBalances()
+    {
+        $balances = $this->activityBalances()->get()->groupBy('activity_id');
+
+        foreach ($balances as $activityId => $group) {
+            if ($group->count() > 1) {
+                // Keep the one with the lowest remaining_count (most usage)
+                $keep = $group->sortBy('remaining_count')->first();
+                $group->where('id', '!=', $keep->id)->each->delete();
             }
         }
     }
@@ -127,13 +145,17 @@ class Member extends Model
             }
 
             foreach ($membership->activityLimits as $limit) {
-                MemberActivityBalance::create([
-                    'member_id'        => $member->card_id,
-                    'activity_id'      => $limit->activity_id,
-                    'remaining_count'  => $limit->max_per_year,
-                    'used_today'       => 0,
-                    'last_used_date'   => null,
-                ]);
+                MemberActivityBalance::firstOrCreate(
+                    [
+                        'member_id'   => $member->card_id,
+                        'activity_id' => $limit->activity_id,
+                    ],
+                    [
+                        'remaining_count' => $limit->max_per_year,
+                        'used_today'      => 0,
+                        'last_used_date'  => null,
+                    ]
+                );
             }
         });
     }

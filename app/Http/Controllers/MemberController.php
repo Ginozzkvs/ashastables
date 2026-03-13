@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use App\Models\Membership;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 
 class MemberController extends Controller
@@ -95,10 +96,21 @@ class MemberController extends Controller
 }
 
 
-    // Delete member
+    // Deactivate member (soft delete)
+    public function deactivate(Member $member)
+    {
+        $member->update(['active' => 0]);
+        return redirect()->route('members.index')->with('success', __('messages.member_deactivated'));
+    }
+
+    // Hard delete member and all related data
     public function destroy(Member $member)
     {
+        // Delete related records first
+        $member->activityBalances()->delete();
+        ActivityLog::where('member_id', $member->card_id)->delete();
+
         $member->delete();
-        return redirect()->route('members.index')->with('success', 'Member deleted successfully!');
+        return redirect()->route('members.index')->with('success', __('messages.member_deleted'));
     }
 }

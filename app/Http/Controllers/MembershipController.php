@@ -17,8 +17,7 @@ class MembershipController extends Controller
 
     public function create()
     {
-        $allActivities = Activity::all();
-        return view('memberships.create', compact('allActivities'));
+        return view('memberships.create');
     }
 
     public function store(Request $request)
@@ -27,25 +26,13 @@ class MembershipController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'duration_days' => 'required|integer|min:1',
-            'activity_limits' => 'required|json',
         ]);
 
-        $membership = Membership::create($request->only('name','price','duration_days'));
-        
-        // Handle activity limits
-        $limits = json_decode($request->activity_limits, true);
-        foreach ($limits as $limit) {
-            MembershipActivityLimit::create([
-                'membership_id' => $membership->id,
-                'activity_id' => $limit['activity_id'],
-                'max_per_year' => $limit['max_per_year'],
-                'max_per_day' => $limit['max_per_day'],
-            ]);
-        }
+        Membership::create($request->only('name','price','duration_days'));
 
         return redirect()
             ->route('memberships.index')
-            ->with('success', 'Membership created successfully with activities configured');
+            ->with('success', 'Membership created successfully');
     }
 
     public function edit(Membership $membership)
