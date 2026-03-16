@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\PrinterService;
+use App\Models\PrintJob;
 use Illuminate\Http\Request;
 
 class PrinterController extends Controller
@@ -106,44 +107,20 @@ class PrinterController extends Controller
     }
 
     /**
-     * Print actual receipt from activity
+     * Save print job to database (polled by local print agent)
      */
     public function printReceipt(Request $request)
     {
         try {
-            $type = $request->input('type');
             $receipt = $request->input('receipt');
-            $port = $request->input('port');
-            
+
             if (!$receipt) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No receipt data provided'
                 ], 400);
             }
-            
-            $printer = new PrinterService();
 
-            if ($type === 'usb') {
-                    $printerName = $request->input('printer_name');
-                    if (!$printerName) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'No USB printer selected'
-                        ], 400);
-                    }
-                    $printer->connectUSB($printerName);
-                } else {
-                    $ipAddress = $request->input('ip_address');
-                    if (!$ipAddress) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'No Ethernet printer IP provided'
-                        ], 400);
-                    }
-                    $port = $request->input('port');
-                    $printer->connectEthernet($ipAddress, $port);
-                }
             $receiptData = [
                 'member_name' => $receipt['member_name'] ?? 'Member',
                 'card_uid' => $receipt['member_id'] ?? '',
@@ -154,14 +131,14 @@ class PrinterController extends Controller
                 'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
             ];
 
-            // log the data we send to the printer for debugging
-            \Log::info('Printing receipt', $receiptData);
-
-            $success = $printer->printReceipt($receiptData);
+            PrintJob::create([
+                'receipt_data' => $receiptData,
+                'status' => 'pending',
+            ]);
 
             return response()->json([
-                'success' => $success,
-                'message' => $success ? 'Receipt printed successfully' : 'Printer returned false'
+                'success' => true,
+                'message' => 'Print job queued'
             ]);
         } catch (\Exception $e) {
             \Log::error('Print Error: ' . $e->getMessage());
@@ -170,5 +147,40 @@ class PrinterController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get pending print jobs (called by local print agent)
+     */
+    public function getPendingJobs(Request $request)
+    {
+        $token = $request->query('token');
+        if ($token !== config('app.print_token')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $jobs = PrintJob::where('status', 'pending')
+            ->orderBy('created_at', 'asc')
+            ->limit(10)
+            ->get();
+
+        return response()->json($jobs);
+    }
+
+    /**
+     * Mark print job as done (called by local print agent)
+     */
+    public function markJobDone(Request $request, $id)
+    {
+        $token = $request->query('token');
+        if ($token !== config('app.print_token')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $job = PrintJob::findOrFail($id);
+        $job->status = $request->input('status', 'printed');
+        $job->save();
+
+        return response()->json(['success' => true]);
     }
 }

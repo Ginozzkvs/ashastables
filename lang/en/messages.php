@@ -418,4 +418,23 @@ return [
     'add_renewal_notes' => 'Add any renewal notes...',
     'confirm_renewal' => 'Confirm Renewal',
     'na' => 'N/A',
+
+    // Receipt
+    'receipt_title' => 'ASHA STABLES',
+    'receipt_subtitle' => 'Member Activity Receipt',
+    'receipt_id' => 'Receipt ID',
+    'receipt_date' => 'Date',
+    'receipt_member_info' => 'Member Information',
+    'receipt_name' => 'Name',
+    'receipt_card_id' => 'Card ID',
+    'receipt_activity_details' => 'Activity Details',
+    'receipt_activity' => 'Activity',
+    'receipt_sessions_used_label' => 'Sessions Used',
+    'receipt_session_balance' => 'Session Balance',
+    'receipt_sessions_used' => 'Sessions Used',
+    'receipt_sessions_left' => 'Sessions Left',
+    'receipt_total_sessions' => 'Total Sessions',
+    'receipt_status' => 'COMPLETED + APPROVED',
+    'receipt_thank_you' => 'Thank you for using',
+    'receipt_keep' => 'Please keep this receipt',
 ];

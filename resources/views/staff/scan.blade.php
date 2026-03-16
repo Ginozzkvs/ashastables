@@ -752,44 +752,23 @@ function scanComponent() {
         },
 
         printBill(receiptData) {
-            // Try server-side ethernet print first (works on local network)
-            const printData = {
-                type: this.printerType,
-                receipt: receiptData
-            }
-
-            if (this.printerType === 'usb') {
-                printData.printer_name = this.usbPrinterName
-            } else {
-                if (this.defaultEthernetPrinter) {
-                    const defaultPrinter = this.ethernetPrinters.find(p => p.id.toString() === this.defaultEthernetPrinter)
-                    if (defaultPrinter) {
-                        printData.ip_address = defaultPrinter.ip
-                    }
-                }
-            }
-
             fetch('{{ route("staff.printer.print-receipt") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify(printData)
+                body: JSON.stringify({ receipt: receiptData })
             })
             .then(r => r.json())
             .then(result => {
-                if (!result.success) {
-                    console.log('Server print failed, using browser print')
-                    this.browserPrint(receiptData)
+                if (result.success) {
+                    console.log('Print job queued')
                 } else {
-                    console.log('Server print success')
+                    console.error('Print queue failed:', result.message)
                 }
             })
-            .catch(err => {
-                console.log('Server print error, using browser print')
-                this.browserPrint(receiptData)
-            })
+            .catch(err => console.error('Print error:', err))
         },
 
         reset() {

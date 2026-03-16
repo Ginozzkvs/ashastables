@@ -143,6 +143,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Print Agent API (polled by local print server)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('api/print')->group(function () {
+    Route::get('/pending', [PrinterController::class, 'getPendingJobs']);
+    Route::post('/done/{id}', [PrinterController::class, 'markJobDone']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Auth Routes (Laravel Breeze / Jetstream)
 |--------------------------------------------------------------------------
 */

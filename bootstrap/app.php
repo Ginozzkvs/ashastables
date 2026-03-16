@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             SetLocale::class,
         ]);
+
+        // Exclude print agent API from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'api/print/*',
+        ]);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

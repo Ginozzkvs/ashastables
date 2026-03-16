@@ -416,4 +416,23 @@ return [
     'add_renewal_notes' => 'ເພີ່ມໝາຍເຫດການຕໍ່ອາຍຸ...',
     'confirm_renewal' => 'ຢືນຢັນການຕໍ່ອາຍຸ',
     'na' => 'ບໍ່ມີ',
+
+    // Receipt
+    'receipt_title' => 'ASHA STABLES',
+    'receipt_subtitle' => 'ໃບບິນກິດຈະກຳສະມາຊິກ',
+    'receipt_id' => 'ລະຫັດໃບບິນ',
+    'receipt_date' => 'ວັນທີ',
+    'receipt_member_info' => 'ຂໍ້ມູນສະມາຊິກ',
+    'receipt_name' => 'ຊື່',
+    'receipt_card_id' => 'ລະຫັດບັດ',
+    'receipt_activity_details' => 'ລາຍລະອຽດກິດຈະກຳ',
+    'receipt_activity' => 'ກິດຈະກຳ',
+    'receipt_sessions_used_label' => 'ເຊດຊັນທີ່ໃຊ້',
+    'receipt_session_balance' => 'ຍອດເຊດຊັນ',
+    'receipt_sessions_used' => 'ເຊດຊັນທີ່ໃຊ້',
+    'receipt_sessions_left' => 'ເຊດຊັນທີ່ເຫຼືອ',
+    'receipt_total_sessions' => 'ເຊດຊັນທັງໝົດ',
+    'receipt_status' => 'ສຳເລັດ + ອະນຸມັດ',
+    'receipt_thank_you' => 'ຂອບໃຈທີ່ໃຊ້ບໍລິການ',
+    'receipt_keep' => 'ກະລຸນາເກັບໃບບິນໄວ້',
 ];

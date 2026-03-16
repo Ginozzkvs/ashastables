@@ -139,7 +139,7 @@ class PrinterServiceWindows
         $this->drawText($image, "Member Information", 20, $y, 11, $fontColor);
         $y += 25;
         
-        // Member info with Lao labels possible here
+        // Member info
         $this->drawText($image, "Name: " . ($data['member_name'] ?? '-'), 20, $y, 10, $fontColor);
         $y += 25;
         
