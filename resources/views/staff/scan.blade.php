@@ -634,6 +634,7 @@ function scanComponent() {
                             member_name: data.member.name,
                             member_id: data.member.id,
                             activity_name: data.activity.name,
+                            membership_name: data.membership_name,
                             remaining_sessions: data.remaining_sessions,
                             used_sessions: data.used_sessions,
                             timestamp: timestamp

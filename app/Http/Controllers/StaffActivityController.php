@@ -88,10 +88,22 @@ class StaffActivityController extends Controller
             $member = $activityLog->member;
             $activity = $activityLog->activity;
             
+            // Load membership name
+            $member->load('membership');
+            $membershipName = $member->membership ? $member->membership->name : 'Standard Membership';
+
             // Get remaining sessions for this activity
-            $balance = \App\Models\MemberActivityBalance::where('member_id', $member->id)
+            $balance = \App\Models\MemberActivityBalance::where('member_id', $member->card_id)
                 ->where('activity_id', $activity->id)
                 ->first();
+
+            // Calculate real total used from membership limit
+            $remaining = $balance ? $balance->remaining_count : 0;
+            $limit = \App\Models\MembershipActivityLimit::where('membership_id', $member->membership_id)
+                ->where('activity_id', $activity->id)
+                ->first();
+            $maxPerYear = $limit ? $limit->max_per_year : $remaining;
+            $usedSessions = max(0, $maxPerYear - $remaining);
 
             return response()->json([
                 'success' => true,
@@ -105,8 +117,9 @@ class StaffActivityController extends Controller
                     'name' => $activity->name,
                     'id' => $activity->id
                 ],
-                'remaining_sessions' => $balance ? $balance->remaining_count : 0,
-                'used_sessions' => $activityLog->quantity ?? 1
+                'membership_name' => $membershipName,
+                'remaining_sessions' => $remaining,
+                'used_sessions' => $usedSessions
             ]);
         } catch (\Exception $e) {
             return response()->json([

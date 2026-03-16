@@ -83,6 +83,7 @@ class PrinterController extends Controller
                 'member_name' => 'Test Member',
                 'card_uid' => 'ABC123456',
                 'activity_name' => 'Horse Riding',
+                'membership_name' => 'Gold Membership',
                 'timestamp' => now()->format('Y-m-d H:i:s'),
                 'remaining_count' => 5,
                 'used_count' => 19
@@ -149,7 +150,8 @@ class PrinterController extends Controller
                 'activity_name' => $receipt['activity_name'] ?? 'Activity',
                 'timestamp' => $receipt['timestamp'] ?? now()->format('Y-m-d H:i:s'),
                 'remaining_count' => $receipt['remaining_sessions'] ?? 0,
-                'used_count' => $receipt['used_sessions'] ?? 0
+                'used_count' => $receipt['used_sessions'] ?? 0,
+                'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
             ];
 
             // log the data we send to the printer for debugging
