@@ -86,33 +86,10 @@
     </div>
 </div>
 
-<script src="/js/qz-tray.js"></script>
 <script>
     const csrfToken = '{{ csrf_token() }}';
     let printersList = JSON.parse(localStorage.getItem('ethernetPrinters') || '[]');
     let defaultPrinter = localStorage.getItem('defaultEthernetPrinter') || '';
-
-    // QZ Tray - skip certificate checks for unsigned version
-    if (typeof qz !== 'undefined') {
-        qz.security.setCertificatePromise(() => Promise.resolve(''));
-        qz.security.setSignaturePromise(() => Promise.resolve(''));
-    }
-
-    function ensureQzConnected() {
-        return new Promise((resolve, reject) => {
-            if (typeof qz === 'undefined') {
-                reject('QZ Tray library not loaded. Please refresh the page.');
-                return;
-            }
-            if (qz.websocket.isActive()) {
-                resolve();
-            } else {
-                qz.websocket.connect().then(resolve).catch(() => {
-                    reject('QZ Tray is not running. Please install and start QZ Tray on this computer.');
-                });
-            }
-        });
-    }
 
     function toggleConnectionType(type) {
         document.getElementById('usbSection').style.display = type === 'usb' ? 'block' : 'none';
@@ -268,107 +245,89 @@
     }
 
     function testPrinter() {
-        const type = document.querySelector('input[name="connectionType"]:checked').value;
-
-        if (type === 'ethernet') {
-            const selectedId = document.getElementById('defaultPrinter').value;
-            if (!selectedId) {
-                showStatus('Please select a printer', 'error');
-                return;
-            }
-            const printer = printersList.find(p => p.id.toString() === selectedId);
-            const ip = printer.ip;
-            const port = parseInt(printer.port) || 9100;
-
-            showStatus('Connecting via QZ Tray...', 'success');
-            ensureQzConnected().then(() => {
-                return qz.socket.open(ip, port);
-            }).then(() => {
-                return qz.socket.close();
-            }).then(() => {
-                showStatus('Printer connected successfully via QZ Tray!', 'success');
-            }).catch(err => {
-                showStatus('Connection failed: ' + err, 'error');
-            });
-        } else {
-            showStatus('USB test requires QZ Tray with the printer installed on this PC', 'error');
-        }
+        showStatus('Use "Print Test Receipt" to test printing via browser print dialog.', 'success');
     }
 
     function printTestReceipt() {
-        const type = document.querySelector('input[name="connectionType"]:checked').value;
+        const divider = '='.repeat(42);
+        const timestamp = new Date().toLocaleString();
 
-        if (type === 'ethernet') {
-            const selectedId = document.getElementById('defaultPrinter').value;
-            if (!selectedId) {
-                showStatus('Please select a printer', 'error');
-                return;
-            }
-            const printer = printersList.find(p => p.id.toString() === selectedId);
-            const ip = printer.ip;
-            const port = parseInt(printer.port) || 9100;
+        const oldFrame = document.getElementById('printFrame');
+        if (oldFrame) oldFrame.remove();
 
-            // Build ESC/POS test receipt
-            const ESC = '\x1B';
-            const GS = '\x1D';
-            const divider = '='.repeat(42);
-            let receipt = '';
-            receipt += ESC + '@';
-            receipt += ESC + 'a' + '\x01';
-            receipt += ESC + 'E' + '\x01';
-            receipt += 'ASHA STABLES\n';
-            receipt += 'TEST RECEIPT\n';
-            receipt += ESC + 'E' + '\x00';
-            receipt += divider + '\n\n';
-            receipt += ESC + 'a' + '\x00';
-            receipt += 'Date/Time: ' + new Date().toLocaleString() + '\n';
-            receipt += divider + '\n\n';
-            receipt += ESC + 'E' + '\x01';
-            receipt += 'Member Information\n';
-            receipt += ESC + 'E' + '\x00';
-            receipt += 'Name: Test Member\n';
-            receipt += 'Card ID: ABC123456\n';
-            receipt += 'Type: Gold Membership\n';
-            receipt += divider + '\n\n';
-            receipt += ESC + 'E' + '\x01';
-            receipt += 'Activity Details\n';
-            receipt += ESC + 'E' + '\x00';
-            receipt += 'Activity: Horse Riding\n';
-            receipt += 'Sessions Used: 1\n';
-            receipt += divider + '\n\n';
-            receipt += ESC + 'E' + '\x01';
-            receipt += 'Session Balance\n';
-            receipt += ESC + 'E' + '\x00';
-            receipt += 'Sessions Used: ' + '19'.padStart(20, '.') + '\n';
-            receipt += 'Sessions Left: ' + '5'.padStart(19, '.') + '\n';
-            receipt += 'Total Sessions: ' + '24'.padStart(18, '.') + '\n';
-            receipt += divider + '\n\n';
-            receipt += ESC + 'a' + '\x01';
-            receipt += ESC + 'E' + '\x01';
-            receipt += 'COMPLETED + APPROVED\n';
-            receipt += ESC + 'E' + '\x00';
-            receipt += divider + '\n\n';
-            receipt += 'Thank you for using\n';
-            receipt += 'ASHA STABLES\n';
-            receipt += 'Please keep this receipt\n\n\n\n\n';
-            receipt += GS + 'V' + '\x01';
-            receipt += ESC + '@';
+        const iframe = document.createElement('iframe');
+        iframe.id = 'printFrame';
+        iframe.style.position = 'fixed';
+        iframe.style.top = '-9999px';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '80mm';
+        iframe.style.height = '0';
+        document.body.appendChild(iframe);
 
-            showStatus('Printing test receipt via QZ Tray...', 'success');
-            ensureQzConnected().then(() => {
-                return qz.socket.open(ip, port);
-            }).then(() => {
-                return qz.socket.sendData(receipt);
-            }).then(() => {
-                return qz.socket.close();
-            }).then(() => {
-                showStatus('Test receipt printed!', 'success');
-            }).catch(err => {
-                showStatus('Print failed: ' + err, 'error');
-            });
-        } else {
-            showStatus('USB printing requires QZ Tray with the printer installed on this PC', 'error');
-        }
+        const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Test Receipt</title>
+<style>
+    @page { size: 80mm auto; margin: 0; }
+    body { font-family: 'Courier New', monospace; font-size: 12px; width: 72mm; margin: 4mm; padding: 0; color: #000; }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .divider { letter-spacing: 2px; margin: 6px 0; }
+    .row { display: flex; justify-content: space-between; }
+    .section { margin: 8px 0; }
+    h1 { font-size: 16px; margin: 0; font-family: 'Courier New', monospace; }
+    h2 { font-size: 13px; margin: 2px 0; font-weight: normal; font-family: 'Courier New', monospace; }
+    h3 { font-size: 12px; margin: 4px 0; font-family: 'Courier New', monospace; }
+    p { margin: 2px 0; }
+</style></head><body>
+<div class="center">
+    <h1 class="bold">ASHA STABLES</h1>
+    <h2>TEST RECEIPT</h2>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <p>Date/Time: ${timestamp}</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <h3 class="bold">Member Information</h3>
+    <p>Name: Test Member</p>
+    <p>Card ID: ABC123456</p>
+    <p>Type: Gold Membership</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <h3 class="bold">Activity Details</h3>
+    <p>Activity: Horse Riding</p>
+    <p>Sessions Used: 1</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <h3 class="bold">Session Balance</h3>
+    <div class="row"><span>Sessions Used:</span><span>19</span></div>
+    <div class="row"><span>Sessions Left:</span><span>5</span></div>
+    <div class="row"><span>Total Sessions:</span><span>24</span></div>
+</div>
+<p class="divider">${divider}</p>
+<div class="center section">
+    <p class="bold">COMPLETED + APPROVED</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="center section">
+    <p>Thank you for using</p>
+    <p class="bold">ASHA STABLES</p>
+    <p>Please keep this receipt</p>
+</div>
+</body></html>`;
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            showStatus('Print dialog opened!', 'success');
+        }, 300);
     }
 
     function showStatus(message, type) {
