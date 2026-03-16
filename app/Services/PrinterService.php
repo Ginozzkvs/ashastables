@@ -120,7 +120,7 @@ class PrinterService
             throw new Exception("Printer IP address not set");
         }
 
-        $socket = @fsockopen($this->ipAddress, $this->port, $errno, $errstr, 5);
+        $socket = @fsockopen($this->ipAddress, $this->port, $errno, $errstr, 2);
         if (!$socket) {
             throw new Exception("Cannot connect to printer at {$this->ipAddress}:{$this->port} - $errstr");
         }

@@ -672,6 +672,19 @@ function scanComponent() {
             const total = used + remaining
             const divider = '='.repeat(42)
 
+            // Remove old print iframe if exists
+            const oldFrame = document.getElementById('printFrame')
+            if (oldFrame) oldFrame.remove()
+
+            const iframe = document.createElement('iframe')
+            iframe.id = 'printFrame'
+            iframe.style.position = 'fixed'
+            iframe.style.top = '-9999px'
+            iframe.style.left = '-9999px'
+            iframe.style.width = '80mm'
+            iframe.style.height = '0'
+            document.body.appendChild(iframe)
+
             const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Receipt</title>
 <style>
@@ -728,12 +741,14 @@ function scanComponent() {
 </div>
 </body></html>`
 
-            const printWindow = window.open('', '_blank', 'width=350,height=600')
-            printWindow.document.write(html)
-            printWindow.document.close()
-            printWindow.focus()
-            printWindow.print()
-            setTimeout(() => printWindow.close(), 1000)
+            const doc = iframe.contentWindow.document
+            doc.open()
+            doc.write(html)
+            doc.close()
+            setTimeout(() => {
+                iframe.contentWindow.focus()
+                iframe.contentWindow.print()
+            }, 300)
         },
 
         printBill(receiptData) {
