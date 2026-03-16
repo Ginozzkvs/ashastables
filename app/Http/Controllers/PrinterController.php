@@ -107,7 +107,7 @@ class PrinterController extends Controller
     }
 
     /**
-     * Save print job to database (polled by local print agent)
+     * Print receipt directly to office printer via public IP
      */
     public function printReceipt(Request $request)
     {
@@ -131,14 +131,13 @@ class PrinterController extends Controller
                 'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
             ];
 
-            PrintJob::create([
-                'receipt_data' => $receiptData,
-                'status' => 'pending',
-            ]);
+            $printer = new PrinterService();
+            $printer->connectEthernet('115.84.115.151', 9100);
+            $printer->printReceipt($receiptData);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Print job queued'
+                'message' => 'Receipt printed'
             ]);
         } catch (\Exception $e) {
             \Log::error('Print Error: ' . $e->getMessage());
