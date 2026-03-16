@@ -666,45 +666,74 @@ function scanComponent() {
         },
 
         printBill(receiptData) {
-            // Send print request with actual receipt data
-            const printData = {
-                type: this.printerType,
-                receipt: receiptData
-            }
-            
-            if (this.printerType === 'usb') {
-                printData.printer_name = this.usbPrinterName
-            } else {
-                // Use default Ethernet printer
-                if (this.defaultEthernetPrinter) {
-                    const defaultPrinter = this.ethernetPrinters.find(p => p.id.toString() === this.defaultEthernetPrinter)
-                    if (defaultPrinter) {
-                        printData.ip_address = defaultPrinter.ip
-                    }
-                }
-            }
+            const d = receiptData
+            const used = d.used_sessions || 0
+            const remaining = d.remaining_sessions || 0
+            const total = used + remaining
+            const divider = '='.repeat(42)
 
-            console.log('Printing with data:', printData)
-            
-            fetch('{{ route("staff.printer.print-receipt") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(printData)
-            })
-            .then(r => r.json())
-            .then(result => {
-                console.log('Print response:', result);
-                if (!result.success) {
-                    alert('Print failed: ' + (result.message || 'unknown error'));
-                }
-            })
-            .catch(err => {
-                console.error('Print error:', err);
-                alert('Print failed: network or server error');
-            })
+            const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Receipt</title>
+<style>
+    @page { size: 80mm auto; margin: 0; }
+    body { font-family: 'Courier New', monospace; font-size: 12px; width: 72mm; margin: 4mm; padding: 0; color: #000; }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .divider { letter-spacing: 2px; margin: 6px 0; }
+    .row { display: flex; justify-content: space-between; }
+    .section { margin: 8px 0; }
+    h1 { font-size: 16px; margin: 0; font-family: 'Courier New', monospace; }
+    h2 { font-size: 13px; margin: 2px 0; font-weight: normal; font-family: 'Courier New', monospace; }
+    h3 { font-size: 12px; margin: 4px 0; font-family: 'Courier New', monospace; }
+    p { margin: 2px 0; }
+</style></head><body>
+<div class="center">
+    <h1 class="bold">ASHA STABLES</h1>
+    <h2>Member Activity Receipt</h2>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <p>Receipt ID: AUTO</p>
+    <p>Date/Time: ${d.timestamp || new Date().toLocaleString()}</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <h3 class="bold">Member Information</h3>
+    <p>Name: ${d.member_name || '-'}</p>
+    <p>Card ID: ${d.member_id || '-'}</p>
+    <p>Type: ${d.membership_name || 'Standard Membership'}</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <h3 class="bold">Activity Details</h3>
+    <p>Activity: ${d.activity_name || '-'}</p>
+    <p>Sessions Used: 1</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="section">
+    <h3 class="bold">Session Balance</h3>
+    <div class="row"><span>Sessions Used:</span><span>${used}</span></div>
+    <div class="row"><span>Sessions Left:</span><span>${remaining}</span></div>
+    <div class="row"><span>Total Sessions:</span><span>${total}</span></div>
+</div>
+<p class="divider">${divider}</p>
+<div class="center section">
+    <p class="bold">COMPLETED + APPROVED</p>
+</div>
+<p class="divider">${divider}</p>
+<div class="center section">
+    <p>Thank you for using</p>
+    <p class="bold">ASHA STABLES</p>
+    <p>Please keep this receipt</p>
+</div>
+</body></html>`
+
+            const printWindow = window.open('', '_blank', 'width=350,height=600')
+            printWindow.document.write(html)
+            printWindow.document.close()
+            printWindow.focus()
+            printWindow.print()
+            setTimeout(() => printWindow.close(), 1000)
         },
 
         reset() {
