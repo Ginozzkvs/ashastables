@@ -86,10 +86,33 @@
     </div>
 </div>
 
+<script src="/js/qz-tray.js"></script>
 <script>
     const csrfToken = '{{ csrf_token() }}';
     let printersList = JSON.parse(localStorage.getItem('ethernetPrinters') || '[]');
     let defaultPrinter = localStorage.getItem('defaultEthernetPrinter') || '';
+
+    // QZ Tray - skip certificate checks for unsigned version
+    if (typeof qz !== 'undefined') {
+        qz.security.setCertificatePromise(() => Promise.resolve(''));
+        qz.security.setSignaturePromise(() => Promise.resolve(''));
+    }
+
+    function ensureQzConnected() {
+        return new Promise((resolve, reject) => {
+            if (typeof qz === 'undefined') {
+                reject('QZ Tray library not loaded. Please refresh the page.');
+                return;
+            }
+            if (qz.websocket.isActive()) {
+                resolve();
+            } else {
+                qz.websocket.connect().then(resolve).catch(() => {
+                    reject('QZ Tray is not running. Please install and start QZ Tray on this computer.');
+                });
+            }
+        });
+    }
 
     function toggleConnectionType(type) {
         document.getElementById('usbSection').style.display = type === 'usb' ? 'block' : 'none';
@@ -246,74 +269,106 @@
 
     function testPrinter() {
         const type = document.querySelector('input[name="connectionType"]:checked').value;
-        const data = { type };
 
-        if (type === 'usb') {
-            data.printer_name = document.getElementById('printerSelect').value;
-        } else {
+        if (type === 'ethernet') {
             const selectedId = document.getElementById('defaultPrinter').value;
             if (!selectedId) {
                 showStatus('Please select a printer', 'error');
                 return;
             }
             const printer = printersList.find(p => p.id.toString() === selectedId);
-            data.ip_address = printer.ip;
-            if (printer.port) data.port = printer.port;
-        }
+            const ip = printer.ip;
+            const port = parseInt(printer.port) || 9100;
 
-        fetch('{{ route("staff.printer.test") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(data)
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('Printer connected successfully!', 'success');
-                } else {
-                    showStatus(data.message, 'error');
-                }
-            })
-            .catch(err => showStatus('Failed to test printer', 'error'));
+            showStatus('Connecting via QZ Tray...', 'success');
+            ensureQzConnected().then(() => {
+                return qz.socket.open(ip, port);
+            }).then(() => {
+                return qz.socket.close();
+            }).then(() => {
+                showStatus('Printer connected successfully via QZ Tray!', 'success');
+            }).catch(err => {
+                showStatus('Connection failed: ' + err, 'error');
+            });
+        } else {
+            showStatus('USB test requires QZ Tray with the printer installed on this PC', 'error');
+        }
     }
 
     function printTestReceipt() {
         const type = document.querySelector('input[name="connectionType"]:checked').value;
-        const data = { type };
 
-        if (type === 'usb') {
-            data.printer_name = document.getElementById('printerSelect').value;
-        } else {
+        if (type === 'ethernet') {
             const selectedId = document.getElementById('defaultPrinter').value;
             if (!selectedId) {
                 showStatus('Please select a printer', 'error');
                 return;
             }
             const printer = printersList.find(p => p.id.toString() === selectedId);
-            data.ip_address = printer.ip;
-            if (printer.port) data.port = printer.port;
-        }
+            const ip = printer.ip;
+            const port = parseInt(printer.port) || 9100;
 
-        fetch('{{ route("staff.printer.print-test") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(data)
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showStatus('Test receipt printed!', 'success');
-                } else {
-                    showStatus(data.message, 'error');
-                }
-            })
-            .catch(err => showStatus('Failed to print', 'error'));
+            // Build ESC/POS test receipt
+            const ESC = '\x1B';
+            const GS = '\x1D';
+            const divider = '='.repeat(42);
+            let receipt = '';
+            receipt += ESC + '@';
+            receipt += ESC + 'a' + '\x01';
+            receipt += ESC + 'E' + '\x01';
+            receipt += 'ASHA STABLES\n';
+            receipt += 'TEST RECEIPT\n';
+            receipt += ESC + 'E' + '\x00';
+            receipt += divider + '\n\n';
+            receipt += ESC + 'a' + '\x00';
+            receipt += 'Date/Time: ' + new Date().toLocaleString() + '\n';
+            receipt += divider + '\n\n';
+            receipt += ESC + 'E' + '\x01';
+            receipt += 'Member Information\n';
+            receipt += ESC + 'E' + '\x00';
+            receipt += 'Name: Test Member\n';
+            receipt += 'Card ID: ABC123456\n';
+            receipt += 'Type: Gold Membership\n';
+            receipt += divider + '\n\n';
+            receipt += ESC + 'E' + '\x01';
+            receipt += 'Activity Details\n';
+            receipt += ESC + 'E' + '\x00';
+            receipt += 'Activity: Horse Riding\n';
+            receipt += 'Sessions Used: 1\n';
+            receipt += divider + '\n\n';
+            receipt += ESC + 'E' + '\x01';
+            receipt += 'Session Balance\n';
+            receipt += ESC + 'E' + '\x00';
+            receipt += 'Sessions Used: ' + '19'.padStart(20, '.') + '\n';
+            receipt += 'Sessions Left: ' + '5'.padStart(19, '.') + '\n';
+            receipt += 'Total Sessions: ' + '24'.padStart(18, '.') + '\n';
+            receipt += divider + '\n\n';
+            receipt += ESC + 'a' + '\x01';
+            receipt += ESC + 'E' + '\x01';
+            receipt += 'COMPLETED + APPROVED\n';
+            receipt += ESC + 'E' + '\x00';
+            receipt += divider + '\n\n';
+            receipt += 'Thank you for using\n';
+            receipt += 'ASHA STABLES\n';
+            receipt += 'Please keep this receipt\n\n\n\n\n';
+            receipt += GS + 'V' + '\x01';
+            receipt += ESC + '@';
+
+            showStatus('Printing test receipt via QZ Tray...', 'success');
+            ensureQzConnected().then(() => {
+                return qz.socket.open(ip, port);
+            }).then(() => {
+                return qz.socket.sendData(receipt);
+            }).then(() => {
+                return qz.socket.close();
+            }).then(() => {
+                showStatus('Test receipt printed!', 'success');
+            }).catch(err => {
+                showStatus('Print failed: ' + err, 'error');
+            });
+        } else {
+            showStatus('USB printing requires QZ Tray with the printer installed on this PC', 'error');
+        }
     }
 
     function showStatus(message, type) {
