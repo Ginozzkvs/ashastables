@@ -494,6 +494,7 @@ function scanComponent() {
         activities: [],
         error: null,
         loading: false,
+        printingRowId: null,
 
         // Ethernet printers list and default
         ethernetPrinters: JSON.parse(localStorage.getItem('ethernetPrinters') || '[]'),
@@ -752,7 +753,32 @@ function scanComponent() {
         },
 
         printBill(receiptData) {
-            this.browserPrint(receiptData)
+            if (!receiptData) {
+                this.errorMessage = 'No receipt data to print.';
+                return;
+            }
+            this.printingRowId = receiptData.activity_name; 
+
+            fetch('{{ route('staff.printer.print-receipt') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ receipt: receiptData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.printingRowId = null;
+                if (!data.success) {
+                    this.errorMessage = data.message || 'Failed to connect to printer on Port 9100.';
+                }
+            })
+            .catch(error => {
+                this.printingRowId = null;
+                console.error('Print Request Error:', error);
+                this.errorMessage = 'AWS Sever could not connect. Ensure router Port 9100 is forwarded to Printer IP 192.168.0.203';
+            });
         },
 
         reset() {

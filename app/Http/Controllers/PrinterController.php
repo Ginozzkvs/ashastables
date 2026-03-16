@@ -32,54 +32,18 @@ class PrinterController extends Controller
      */
     public function testPrinter(Request $request)
     {
-        try {
-            $type = $request->input('type'); // 'usb' or 'ethernet'
-
-            if ($type === 'usb') {
-                $printerName = $request->input('printer_name');
-                $printer = new PrinterService();
-                $printer->connectUSB($printerName);
-                \Log::info('Testing USB printer', ['name' => $printerName]);
-            } else {
-                $ipAddress = $request->input('ip_address');
-                $port = $request->input('port');
-                $printer = new PrinterService();
-                $printer->connectEthernet($ipAddress, $port);
-                \Log::info('Testing Ethernet printer', ['ip' => $ipAddress, 'port' => $port]);
-            }
-
-            $printer->testConnection();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Printer connected successfully'
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Printer test failed: '.$e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Connection testing is now handled by the local print agent.'
+        ]);
     }
 
     /**
-     * Print test receipt
+     * Queue test receipt for local agent
      */
     public function printTestReceipt(Request $request)
     {
         try {
-            $type = $request->input('type');
-            $printer = new PrinterService();
-
-            if ($type === 'usb') {
-                $printer->connectUSB($request->input('printer_name'));
-            } else {
-                $ip = $request->input('ip_address');
-                $port = $request->input('port');
-                $printer->connectEthernet($ip, $port);
-            }
-
             $testData = [
                 'member_name' => 'Test Member',
                 'card_uid' => 'ABC123456',
@@ -90,12 +54,16 @@ class PrinterController extends Controller
                 'used_count' => 19
             ];
 
-            \Log::info('Printing test receipt', $testData);
-            $printer->printReceipt($testData);
+            \Log::info('Queuing test receipt');
+            
+            PrintJob::create([
+                'receipt_data' => $testData,
+                'status' => 'pending'
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Test receipt printed successfully'
+                'message' => 'Test receipt added to queue successfully. The local agent will print it shortly.'
             ]);
         } catch (\Exception $e) {
             \Log::error('Test print failed: '.$e->getMessage());
@@ -107,7 +75,7 @@ class PrinterController extends Controller
     }
 
     /**
-     * Print receipt directly to office printer via public IP
+     * Queue receipt for local agent
      */
     public function printReceipt(Request $request)
     {
@@ -131,19 +99,20 @@ class PrinterController extends Controller
                 'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
             ];
 
-            $printer = new PrinterService();
-            $printer->connectEthernet('115.84.115.151', 9100);
-            $printer->printReceipt($receiptData);
+            PrintJob::create([
+                'receipt_data' => $receiptData,
+                'status' => 'pending'
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Receipt printed'
+                'message' => 'Receipt added to queue. The local agent will print it shortly.'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Print Error: ' . $e->getMessage());
+            \Log::error('Print Queue Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Failed to queue print job. Error: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -163,7 +132,21 @@ class PrinterController extends Controller
             ->limit(10)
             ->get();
 
-        return response()->json($jobs);
+        // Return raw ESC/POS bytes encoded as base64 for the local agent.
+        $printerService = new PrinterService();
+        $formattedJobs = $jobs->map(function ($job) use ($printerService) {
+            $reflection = new \ReflectionClass($printerService);
+            $method = $reflection->getMethod('formatReceipt');
+            $method->setAccessible(true);
+            $bytes = $method->invoke($printerService, $job->receipt_data);
+
+            return [
+                'id' => $job->id,
+                'payload_base64' => base64_encode($bytes),
+            ];
+        });
+
+        return response()->json($formattedJobs);
     }
 
     /**

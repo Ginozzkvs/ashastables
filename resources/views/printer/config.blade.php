@@ -245,89 +245,69 @@
     }
 
     function testPrinter() {
-        showStatus('Use "Print Test Receipt" to test printing via browser print dialog.', 'success');
+        this.saving = true;
+        this.errorMessage = '';
+        this.successMessage = '';
+
+        fetch('{{ route('staff.printer.test') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    connection_type: this.connectionType,
+                    ip_address: this.ipAddress,
+                    ip_port: this.ipPort
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.saving = false;
+                if (data.success) {
+                    this.successMessage = 'Test connection successful!';
+                    setTimeout(() => this.successMessage = '', 3000);
+                } else {
+                    this.errorMessage = data.message || 'Error connecting to printer. Is port 9100 forwarded on your router?';
+                }
+            })
+            .catch(error => {
+                this.saving = false;
+                this.errorMessage = 'Network error or port forwarding not set up on your router.';
+            });
     }
 
     function printTestReceipt() {
-        const divider = '='.repeat(42);
-        const timestamp = new Date().toLocaleString();
+         this.saving = true;
+        this.errorMessage = '';
+        this.successMessage = '';
 
-        const oldFrame = document.getElementById('printFrame');
-        if (oldFrame) oldFrame.remove();
-
-        const iframe = document.createElement('iframe');
-        iframe.id = 'printFrame';
-        iframe.style.position = 'fixed';
-        iframe.style.top = '-9999px';
-        iframe.style.left = '-9999px';
-        iframe.style.width = '80mm';
-        iframe.style.height = '0';
-        document.body.appendChild(iframe);
-
-        const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Test Receipt</title>
-<style>
-    @page { size: 80mm auto; margin: 0; }
-    body { font-family: 'Courier New', monospace; font-size: 12px; width: 72mm; margin: 4mm; padding: 0; color: #000; }
-    .center { text-align: center; }
-    .bold { font-weight: bold; }
-    .divider { letter-spacing: 2px; margin: 6px 0; }
-    .row { display: flex; justify-content: space-between; }
-    .section { margin: 8px 0; }
-    h1 { font-size: 16px; margin: 0; font-family: 'Courier New', monospace; }
-    h2 { font-size: 13px; margin: 2px 0; font-weight: normal; font-family: 'Courier New', monospace; }
-    h3 { font-size: 12px; margin: 4px 0; font-family: 'Courier New', monospace; }
-    p { margin: 2px 0; }
-</style></head><body>
-<div class="center">
-    <h1 class="bold">ASHA STABLES</h1>
-    <h2>TEST RECEIPT</h2>
-</div>
-<p class="divider">${divider}</p>
-<div class="section">
-    <p>Date/Time: ${timestamp}</p>
-</div>
-<p class="divider">${divider}</p>
-<div class="section">
-    <h3 class="bold">Member Information</h3>
-    <p>Name: Test Member</p>
-    <p>Card ID: ABC123456</p>
-    <p>Type: Gold Membership</p>
-</div>
-<p class="divider">${divider}</p>
-<div class="section">
-    <h3 class="bold">Activity Details</h3>
-    <p>Activity: Horse Riding</p>
-    <p>Sessions Used: 1</p>
-</div>
-<p class="divider">${divider}</p>
-<div class="section">
-    <h3 class="bold">Session Balance</h3>
-    <div class="row"><span>Sessions Used:</span><span>19</span></div>
-    <div class="row"><span>Sessions Left:</span><span>5</span></div>
-    <div class="row"><span>Total Sessions:</span><span>24</span></div>
-</div>
-<p class="divider">${divider}</p>
-<div class="center section">
-    <p class="bold">COMPLETED + APPROVED</p>
-</div>
-<p class="divider">${divider}</p>
-<div class="center section">
-    <p>Thank you for using</p>
-    <p class="bold">ASHA STABLES</p>
-    <p>Please keep this receipt</p>
-</div>
-</body></html>`;
-
-        const doc = iframe.contentWindow.document;
-        doc.open();
-        doc.write(html);
-        doc.close();
-        setTimeout(() => {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-            showStatus('Print dialog opened!', 'success');
-        }, 300);
+        fetch('{{ route('staff.printer.print-test') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                 body: JSON.stringify({
+                    connection_type: this.connectionType,
+                    ip_address: this.ipAddress,
+                    ip_port: this.ipPort
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.saving = false;
+                if (data.success) {
+                    this.successMessage = 'Test receipt printed to server successfully.';
+                    setTimeout(() => this.successMessage = '', 3000);
+                } else {
+                    this.errorMessage = data.message || 'Error printing test receipt. Is your router forwarding port 9100?';
+                }
+            })
+            .catch(error => {
+                this.saving = false;
+                this.errorMessage = 'Network error or your router is blocking the AWS Server from reaching your public IP.';
+            });
     }
 
     function showStatus(message, type) {
