@@ -665,7 +665,7 @@ function scanComponent() {
             }
         },
 
-        printBill(receiptData) {
+        browserPrint(receiptData) {
             const d = receiptData
             const used = d.used_sessions || 0
             const remaining = d.remaining_sessions || 0
@@ -734,6 +734,47 @@ function scanComponent() {
             printWindow.focus()
             printWindow.print()
             setTimeout(() => printWindow.close(), 1000)
+        },
+
+        printBill(receiptData) {
+            // Try server-side ethernet print first (works on local network)
+            const printData = {
+                type: this.printerType,
+                receipt: receiptData
+            }
+
+            if (this.printerType === 'usb') {
+                printData.printer_name = this.usbPrinterName
+            } else {
+                if (this.defaultEthernetPrinter) {
+                    const defaultPrinter = this.ethernetPrinters.find(p => p.id.toString() === this.defaultEthernetPrinter)
+                    if (defaultPrinter) {
+                        printData.ip_address = defaultPrinter.ip
+                    }
+                }
+            }
+
+            fetch('{{ route("staff.printer.print-receipt") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(printData)
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (!result.success) {
+                    console.log('Server print failed, using browser print')
+                    this.browserPrint(receiptData)
+                } else {
+                    console.log('Server print success')
+                }
+            })
+            .catch(err => {
+                console.log('Server print error, using browser print')
+                this.browserPrint(receiptData)
+            })
         },
 
         reset() {
