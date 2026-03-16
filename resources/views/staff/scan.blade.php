@@ -2,6 +2,7 @@
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/qz-tray@2/qz-tray.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -752,23 +753,93 @@ function scanComponent() {
         },
 
         printBill(receiptData) {
-            fetch('{{ route("staff.printer.print-receipt") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ receipt: receiptData })
-            })
-            .then(r => r.json())
-            .then(result => {
-                if (result.success) {
-                    console.log('Print job queued')
-                } else {
-                    console.error('Print queue failed:', result.message)
-                }
-            })
-            .catch(err => console.error('Print error:', err))
+            const d = receiptData
+            const used = d.used_sessions || 0
+            const remaining = d.remaining_sessions || 0
+            const total = used + remaining
+            const divider = '='.repeat(42)
+
+            // Build ESC/POS raw commands
+            const ESC = '\x1B'
+            const GS = '\x1D'
+            let receipt = ''
+            receipt += ESC + '@'          // Reset
+            receipt += ESC + 'a' + '\x01' // Center
+            receipt += ESC + 'E' + '\x01' // Bold ON
+            receipt += 'ASHA STABLES\n'
+            receipt += 'Member Activity Receipt\n'
+            receipt += ESC + 'E' + '\x00' // Bold OFF
+            receipt += divider + '\n\n'
+            receipt += ESC + 'a' + '\x00' // Left align
+            receipt += 'Receipt ID: AUTO\n'
+            receipt += 'Date/Time: ' + (d.timestamp || new Date().toLocaleString()) + '\n'
+            receipt += divider + '\n\n'
+            receipt += ESC + 'E' + '\x01'
+            receipt += 'Member Information\n'
+            receipt += ESC + 'E' + '\x00'
+            receipt += 'Name: ' + (d.member_name || '-') + '\n'
+            receipt += 'Card ID: ' + (d.member_id || '-') + '\n'
+            receipt += 'Type: ' + (d.membership_name || 'Standard Membership') + '\n'
+            receipt += divider + '\n\n'
+            receipt += ESC + 'E' + '\x01'
+            receipt += 'Activity Details\n'
+            receipt += ESC + 'E' + '\x00'
+            receipt += 'Activity: ' + (d.activity_name || '-') + '\n'
+            receipt += 'Sessions Used: 1\n'
+            receipt += 'Staff: Member Staff\n'
+            receipt += divider + '\n\n'
+            receipt += ESC + 'E' + '\x01'
+            receipt += 'Session Balance\n'
+            receipt += ESC + 'E' + '\x00'
+            receipt += 'Sessions Used: ' + String(used).padStart(20, '.') + '\n'
+            receipt += 'Sessions Left: ' + String(remaining).padStart(19, '.') + '\n'
+            receipt += 'Total Sessions: ' + String(total).padStart(18, '.') + '\n'
+            receipt += divider + '\n\n'
+            receipt += ESC + 'a' + '\x01' // Center
+            receipt += ESC + 'E' + '\x01'
+            receipt += 'COMPLETED + APPROVED\n'
+            receipt += ESC + 'E' + '\x00'
+            receipt += divider + '\n\n'
+            receipt += 'Thank you for using\n'
+            receipt += 'ASHA STABLES\n'
+            receipt += 'Please keep this receipt\n\n\n\n\n'
+            receipt += GS + 'V' + '\x01' // Partial cut
+            receipt += ESC + '@'          // Reset
+
+            // Send via QZ Tray
+            if (typeof qz === 'undefined') {
+                console.error('QZ Tray not loaded')
+                this.browserPrint(receiptData)
+                return
+            }
+
+            // Skip certificate checks for unsigned QZ Tray
+            qz.security.setCertificatePromise(() => Promise.resolve(''))
+            qz.security.setSignaturePromise(() => Promise.resolve(''))
+
+            const doQzPrint = () => {
+                qz.socket.open('192.168.0.203', 9100).then(() => {
+                    return qz.socket.sendData(receipt)
+                }).then(() => {
+                    return qz.socket.close()
+                }).then(() => {
+                    console.log('Printed OK via QZ Tray')
+                }).catch(err => {
+                    console.error('QZ Tray print error:', err)
+                    this.browserPrint(receiptData)
+                })
+            }
+
+            if (qz.websocket.isActive()) {
+                doQzPrint()
+            } else {
+                qz.websocket.connect().then(() => {
+                    doQzPrint()
+                }).catch(err => {
+                    console.error('QZ Tray not running:', err)
+                    this.browserPrint(receiptData)
+                })
+            }
         },
 
         reset() {
