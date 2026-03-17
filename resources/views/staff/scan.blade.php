@@ -759,13 +759,26 @@ function scanComponent() {
             }
             this.printingRowId = receiptData.activity_name; 
 
+            // Get default printer from localStorage
+            let printerIP = '192.168.0.203';
+            let printerPort = 9100;
+            const savedPrinters = JSON.parse(localStorage.getItem('ethernetPrinters') || '[]');
+            const defaultId = localStorage.getItem('defaultEthernetPrinter');
+            if (defaultId && savedPrinters.length > 0) {
+                const defaultPrinter = savedPrinters.find(p => p.id.toString() === defaultId);
+                if (defaultPrinter) {
+                    printerIP = defaultPrinter.ip;
+                    printerPort = defaultPrinter.port || 9100;
+                }
+            }
+
             fetch('{{ route('staff.printer.print-receipt') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify({ receipt: receiptData })
+                body: JSON.stringify({ receipt: receiptData, printer_ip: printerIP, printer_port: printerPort })
             })
             .then(response => response.json())
             .then(data => {

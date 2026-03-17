@@ -28,71 +28,87 @@ class PrinterController extends Controller
     }
 
     /**
-     * Test printer connection via public IP
+     * Test printer connection (queue a test job)
      */
     public function testPrinter(Request $request)
     {
         try {
-            $socket = @fsockopen('115.84.114.224', 9100, $errno, $errstr, 5);
-            if (!$socket) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cannot reach printer at 115.84.114.224:9100. Is port forwarding configured on your router?'
-                ], 500);
-            }
-            fclose($socket);
+            $ip = $request->input('ip_address', '192.168.0.203');
+            $port = $request->input('ip_port', 9100);
+
+            PrintJob::create([
+                'receipt_data' => [
+                    'member_name' => 'Connection Test',
+                    'card_uid' => 'TEST',
+                    'activity_name' => 'Test',
+                    'membership_name' => 'Test',
+                    'timestamp' => now()->format('Y-m-d H:i:s'),
+                    'remaining_count' => 0,
+                    'used_count' => 0
+                ],
+                'printer_ip' => $ip,
+                'printer_port' => (int) $port,
+                'status' => 'pending'
+            ]);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Connected to printer successfully!'
+                'message' => 'Test job queued for printer ' . $ip . ':' . $port
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Connection failed: ' . $e->getMessage()
+                'message' => 'Failed: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Print test receipt to public IP
+     * Queue test receipt for local agent
      */
     public function printTestReceipt(Request $request)
     {
         try {
-            $testData = [
-                'member_name' => 'Test Member',
-                'card_uid' => 'ABC123456',
-                'activity_name' => 'Horse Riding',
-                'membership_name' => 'Gold Membership',
-                'timestamp' => now()->format('Y-m-d H:i:s'),
-                'remaining_count' => 5,
-                'used_count' => 19
-            ];
+            $ip = $request->input('ip_address', '192.168.0.203');
+            $port = $request->input('ip_port', 9100);
 
-            $printer = new PrinterService();
-            $printer->connectEthernet('115.84.114.224', 9100);
-            $printer->printReceipt($testData);
+            PrintJob::create([
+                'receipt_data' => [
+                    'member_name' => 'Test Member',
+                    'card_uid' => 'ABC123456',
+                    'activity_name' => 'Horse Riding',
+                    'membership_name' => 'Gold Membership',
+                    'timestamp' => now()->format('Y-m-d H:i:s'),
+                    'remaining_count' => 5,
+                    'used_count' => 19
+                ],
+                'printer_ip' => $ip,
+                'printer_port' => (int) $port,
+                'status' => 'pending'
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Test receipt sent to printer!'
+                'message' => 'Test receipt queued for printer ' . $ip . ':' . $port
             ]);
         } catch (\Exception $e) {
             \Log::error('Test print failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to print. Error: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Print receipt directly to office printer via public IP
+     * Queue receipt for local agent
      */
     public function printReceipt(Request $request)
     {
         try {
             $receipt = $request->input('receipt');
+            $ip = $request->input('printer_ip', '192.168.0.203');
+            $port = $request->input('printer_port', 9100);
 
             if (!$receipt) {
                 return response()->json([
@@ -111,19 +127,22 @@ class PrinterController extends Controller
                 'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
             ];
 
-            $printer = new PrinterService();
-            $printer->connectEthernet('115.84.114.224', 9100);
-            $printer->printReceipt($receiptData);
+            PrintJob::create([
+                'receipt_data' => $receiptData,
+                'printer_ip' => $ip,
+                'printer_port' => (int) $port,
+                'status' => 'pending'
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Receipt printed'
+                'message' => 'Receipt queued for printing.'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Print Error: ' . $e->getMessage());
+            \Log::error('Print Queue Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to print. Port forwarding not set up? Error: ' . $e->getMessage()
+                'message' => 'Failed to queue: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -153,6 +172,8 @@ class PrinterController extends Controller
 
             return [
                 'id' => $job->id,
+                'printer_ip' => $job->printer_ip,
+                'printer_port' => $job->printer_port,
                 'payload_base64' => base64_encode($bytes),
             ];
         });

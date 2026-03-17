@@ -20,7 +20,7 @@ $SERVER_URL = "https://ashastables.com"; // CHANGE THIS BEFORE MOVING TO A DIFFE
 // The security token to authorize against your Laravel application
 $PRINT_TOKEN = "asha2025printkey"; // Matches PRINT_TOKEN in .env
 
-// Your local Ethernet Printer IP and Port
+// Your local Ethernet Printer IP and Port (used as fallback only)
 $PRINTER_IP = "192.168.0.203";
 $PRINTER_PORT = 9100;
 
@@ -63,9 +63,11 @@ while (true) {
             echo "[" . date('H:i:s') . "] Found " . count($jobs) . " pending jobs!\n";
             
             foreach ($jobs as $job) {
-                echo " -> Processing Job ID: {$job['id']} ... ";
+                $jobIP = $job['printer_ip'] ?? $PRINTER_IP;
+                $jobPort = $job['printer_port'] ?? $PRINTER_PORT;
+                echo " -> Job ID: {$job['id']} => {$jobIP}:{$jobPort} ... ";
                 
-                $success = printToEthernet($PRINTER_IP, $PRINTER_PORT, base64_decode($job['payload_base64']));
+                $success = printToEthernet($jobIP, $jobPort, base64_decode($job['payload_base64']));
                 
                 if ($success) {
                     echo "Printed! ";

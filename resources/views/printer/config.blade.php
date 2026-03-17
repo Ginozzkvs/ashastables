@@ -245,9 +245,8 @@
     }
 
     function testPrinter() {
-        this.saving = true;
-        this.errorMessage = '';
-        this.successMessage = '';
+        const dp = getSelectedPrinter();
+        if (!dp) { showStatus('Please select a default printer first', 'error'); return; }
 
         fetch('{{ route('staff.printer.test') }}', {
                 method: 'POST',
@@ -256,31 +255,26 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
-                    connection_type: this.connectionType,
-                    ip_address: this.ipAddress,
-                    ip_port: this.ipPort
+                    ip_address: dp.ip,
+                    ip_port: dp.port || 9100
                 })
             })
             .then(response => response.json())
             .then(data => {
-                this.saving = false;
                 if (data.success) {
-                    this.successMessage = 'Test connection successful!';
-                    setTimeout(() => this.successMessage = '', 3000);
+                    showStatus('Test job queued for ' + dp.ip + '. Agent will print shortly.', 'success');
                 } else {
-                    this.errorMessage = data.message || 'Error connecting to printer. Is port 9100 forwarded on your router?';
+                    showStatus(data.message || 'Error queuing test job.', 'error');
                 }
             })
             .catch(error => {
-                this.saving = false;
-                this.errorMessage = 'Network error or port forwarding not set up on your router.';
+                showStatus('Network error.', 'error');
             });
     }
 
     function printTestReceipt() {
-         this.saving = true;
-        this.errorMessage = '';
-        this.successMessage = '';
+        const dp = getSelectedPrinter();
+        if (!dp) { showStatus('Please select a default printer first', 'error'); return; }
 
         fetch('{{ route('staff.printer.print-test') }}', {
                 method: 'POST',
@@ -288,26 +282,28 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                 body: JSON.stringify({
-                    connection_type: this.connectionType,
-                    ip_address: this.ipAddress,
-                    ip_port: this.ipPort
+                body: JSON.stringify({
+                    ip_address: dp.ip,
+                    ip_port: dp.port || 9100
                 })
             })
             .then(response => response.json())
             .then(data => {
-                this.saving = false;
                 if (data.success) {
-                    this.successMessage = 'Test receipt printed to server successfully.';
-                    setTimeout(() => this.successMessage = '', 3000);
+                    showStatus('Test receipt queued for ' + dp.ip + '. Agent will print shortly.', 'success');
                 } else {
-                    this.errorMessage = data.message || 'Error printing test receipt. Is your router forwarding port 9100?';
+                    showStatus(data.message || 'Error queuing test receipt.', 'error');
                 }
             })
             .catch(error => {
-                this.saving = false;
-                this.errorMessage = 'Network error or your router is blocking the AWS Server from reaching your public IP.';
+                showStatus('Network error.', 'error');
             });
+    }
+
+    function getSelectedPrinter() {
+        const defaultId = localStorage.getItem('defaultEthernetPrinter');
+        if (!defaultId) return null;
+        return printersList.find(p => p.id.toString() === defaultId) || null;
     }
 
     function showStatus(message, type) {
