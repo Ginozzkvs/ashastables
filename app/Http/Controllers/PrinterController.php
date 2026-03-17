@@ -33,11 +33,11 @@ class PrinterController extends Controller
     public function testPrinter(Request $request)
     {
         try {
-            $socket = @fsockopen('115.84.115.151', 9100, $errno, $errstr, 5);
+            $socket = @fsockopen('115.84.114.224', 9100, $errno, $errstr, 5);
             if (!$socket) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cannot reach printer at 115.84.115.151:9100. Is port forwarding configured on your router?'
+                    'message' => 'Cannot reach printer at 115.84.114.224:9100. Is port forwarding configured on your router?'
                 ], 500);
             }
             fclose($socket);
@@ -70,7 +70,7 @@ class PrinterController extends Controller
             ];
 
             $printer = new PrinterService();
-            $printer->connectEthernet('115.84.115.151', 9100);
+            $printer->connectEthernet('115.84.114.224', 9100);
             $printer->printReceipt($testData);
 
             return response()->json([
@@ -112,7 +112,7 @@ class PrinterController extends Controller
             ];
 
             $printer = new PrinterService();
-            $printer->connectEthernet('115.84.115.151', 9100);
+            $printer->connectEthernet('115.84.114.224', 9100);
             $printer->printReceipt($receiptData);
 
             return response()->json([
