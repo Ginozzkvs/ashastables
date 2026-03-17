@@ -28,18 +28,33 @@ class PrinterController extends Controller
     }
 
     /**
-     * Test printer connection
+     * Test printer connection via public IP
      */
     public function testPrinter(Request $request)
     {
-        return response()->json([
-            'success' => true,
-            'message' => 'Connection testing is now handled by the local print agent.'
-        ]);
+        try {
+            $socket = @fsockopen('115.84.115.151', 9100, $errno, $errstr, 5);
+            if (!$socket) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot reach printer at 115.84.115.151:9100. Is port forwarding configured on your router?'
+                ], 500);
+            }
+            fclose($socket);
+            return response()->json([
+                'success' => true,
+                'message' => 'Connected to printer successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Connection failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Queue test receipt for local agent
+     * Print test receipt to public IP
      */
     public function printTestReceipt(Request $request)
     {
@@ -54,28 +69,25 @@ class PrinterController extends Controller
                 'used_count' => 19
             ];
 
-            \Log::info('Queuing test receipt');
-            
-            PrintJob::create([
-                'receipt_data' => $testData,
-                'status' => 'pending'
-            ]);
+            $printer = new PrinterService();
+            $printer->connectEthernet('115.84.115.151', 9100);
+            $printer->printReceipt($testData);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Test receipt added to queue successfully. The local agent will print it shortly.'
+                'message' => 'Test receipt sent to printer!'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Test print failed: '.$e->getMessage());
+            \Log::error('Test print failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Failed to print. Error: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Queue receipt for local agent
+     * Print receipt directly to office printer via public IP
      */
     public function printReceipt(Request $request)
     {
@@ -99,20 +111,19 @@ class PrinterController extends Controller
                 'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
             ];
 
-            PrintJob::create([
-                'receipt_data' => $receiptData,
-                'status' => 'pending'
-            ]);
+            $printer = new PrinterService();
+            $printer->connectEthernet('115.84.115.151', 9100);
+            $printer->printReceipt($receiptData);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Receipt added to queue. The local agent will print it shortly.'
+                'message' => 'Receipt printed'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Print Queue Error: ' . $e->getMessage());
+            \Log::error('Print Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to queue print job. Error: ' . $e->getMessage()
+                'message' => 'Failed to print. Port forwarding not set up? Error: ' . $e->getMessage()
             ], 500);
         }
     }

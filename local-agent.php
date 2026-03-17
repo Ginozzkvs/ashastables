@@ -15,7 +15,7 @@
 // ==========================================
 
 // Your live Laravel server domain/IP (e.g., https://your-domain.com or http://system.your-domain.com)
-$SERVER_URL = "http://localhost:8000"; // CHANGE THIS BEFORE MOVING TO A DIFFERENT COMPUTER!
+$SERVER_URL = "https://ashastables.com"; // CHANGE THIS BEFORE MOVING TO A DIFFERENT COMPUTER!
 
 // The security token to authorize against your Laravel application
 $PRINT_TOKEN = "asha2025printkey"; // Matches PRINT_TOKEN in .env
