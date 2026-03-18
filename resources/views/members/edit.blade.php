@@ -370,6 +370,47 @@
             </div>
         </div>
 
+        <!-- ACTIVITY BALANCES -->
+        @if(isset($balances) && $balances->count() > 0)
+        <div class="card-base rounded-none p-8 mt-8">
+            <p class="text-xs uppercase tracking-widest font-bold mb-6" style="color: #d4af37;">Activity Balances</p>
+            
+            <form method="POST" action="{{ route('members.update-balances', $member->card_id) }}">
+                @csrf
+                @method('PATCH')
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    @foreach($balances as $balance)
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 80px; gap: 1rem; align-items: center; padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.3);">
+                        <div>
+                            <p style="color: #fff; font-weight: 600; margin: 0;">{{ $balance->activity->name ?? 'Unknown' }}</p>
+                            <p style="color: #9ca3af; font-size: 0.75rem; margin: 0.25rem 0 0;">{{ $balance->activity->unit === 'hours' ? 'Hours' : 'Sessions' }}</p>
+                        </div>
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Remaining</label>
+                            <input type="number" 
+                                   name="balances[{{ $balance->id }}]" 
+                                   value="{{ $balance->remaining_count }}" 
+                                   min="0" 
+                                   step="{{ $balance->activity->unit === 'hours' ? '0.5' : '1' }}"
+                                   class="form-input" 
+                                   style="padding: 0.5rem; margin-top: 0.25rem;">
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="color: #6b7280; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Max</label>
+                            <p style="color: #9ca3af; font-size: 0.875rem; margin: 0.25rem 0 0;">{{ $activityLimits[$balance->activity_id] ?? '-' }}</p>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                
+                <div style="margin-top: 1.5rem; text-align: right;">
+                    <button type="submit" class="btn-gold">Save Balances</button>
+                </div>
+            </form>
+        </div>
+        @endif
+
         <!-- DELETE SECTION -->
         <div class="mt-12 pt-8 border-t header-divider">
             <p class="text-xs uppercase tracking-widest font-bold mb-4" style="color: #ef4444;">Danger Zone</p>

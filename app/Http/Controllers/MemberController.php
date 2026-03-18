@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use App\Models\Membership;
+use App\Models\MemberActivityBalance;
+use App\Models\MembershipActivityLimit;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\DB;
 
@@ -57,8 +59,14 @@ class MemberController extends Controller
    public function edit(Member $member)
 {
     $memberships = Membership::all();
+    
+    // Load activity balances with activity and membership limit info
+    $member->syncActivityBalances();
+    $balances = $member->activityBalances()->with('activity')->get();
+    $activityLimits = MembershipActivityLimit::where('membership_id', $member->membership_id)
+        ->pluck('max_per_year', 'activity_id');
 
-    return view('members.edit', compact('member', 'memberships'));
+    return view('members.edit', compact('member', 'memberships', 'balances', 'activityLimits'));
 }
 
     // Update member
@@ -101,6 +109,27 @@ class MemberController extends Controller
     {
         $member->update(['active' => 0]);
         return redirect()->route('members.index')->with('success', __('messages.member_deactivated'));
+    }
+
+    // Update activity balances
+    public function updateBalances(Request $request, Member $member)
+    {
+        $balances = $request->input('balances', []);
+
+        foreach ($balances as $balanceId => $value) {
+            $balance = MemberActivityBalance::where('id', $balanceId)
+                ->where('member_id', $member->card_id)
+                ->first();
+
+            if ($balance) {
+                $balance->remaining_count = max(0, (float) $value);
+                $balance->save();
+            }
+        }
+
+        return redirect()
+            ->route('members.edit', $member->card_id)
+            ->with('success', 'Activity balances updated successfully!');
     }
 
     // Hard delete member and all related data

@@ -99,6 +99,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Members
     Route::resource('members', MemberController::class);
     Route::patch('/members/{member}/deactivate', [MemberController::class, 'deactivate'])->name('members.deactivate');
+    Route::patch('/members/{member}/update-balances', [MemberController::class, 'updateBalances'])->name('members.update-balances');
 
     // Users Management
     Route::resource('users', UserController::class)->except(['show']);
