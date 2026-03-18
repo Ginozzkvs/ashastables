@@ -227,11 +227,8 @@
                                     min="1"
                                     step="{{ $limit->activity->unit === 'hours' ? '0.5' : '1' }}">
                             </div>
-                            <form action="{{ route('memberships.remove-activity', [$membership, $limit->activity]) }}" method="POST" style="display: inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Remove this activity?')">Remove</button>
-                            </form>
+                            <button type="button" class="btn btn-danger" 
+                                onclick="if(confirm('Remove this activity?')) { document.getElementById('remove-{{ $limit->activity_id }}').submit(); }">Remove</button>
                         </div>
                     </div>
                 @endforeach
@@ -242,6 +239,16 @@
             <button type="submit" class="btn btn-gold">Save Changes</button>
         </div>
     </form>
+
+    {{-- Remove forms placed OUTSIDE the main form --}}
+    @if(isset($membership->activityLimits) && $membership->activityLimits->isNotEmpty())
+        @foreach($membership->activityLimits as $limit)
+            <form id="remove-{{ $limit->activity_id }}" action="{{ route('memberships.remove-activity', [$membership, $limit->activity]) }}" method="POST" style="display: none;">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+    @endif
 
     <div class="card-base">
         <h3 style="color: #fff; margin-top: 0;">Add New Activity</h3>
