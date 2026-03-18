@@ -22,7 +22,7 @@ class ActivityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'unit' => 'required|in:minutes,times',
+            'unit' => 'required|in:minutes,times,hours',
         ]);
 
         Activity::create($request->only('name', 'unit'));
@@ -40,7 +40,7 @@ class ActivityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'unit' => 'required|in:minutes,times',
+            'unit' => 'required|in:minutes,times,hours',
         ]);
 
         $activity->update($request->only('name', 'unit'));

@@ -96,8 +96,8 @@ class MembershipController extends Controller
         $validated = $request->validate([
             'limits' => 'required|array',
             'limits.*.activity_id' => 'required|exists:activities,id',
-            'limits.*.max_per_year' => 'required|integer|min:1',
-            'limits.*.max_per_day' => 'required|integer|min:1',
+            'limits.*.max_per_year' => 'required|numeric|min:1',
+            'limits.*.max_per_day' => 'required|numeric|min:1',
         ]);
 
         foreach ($validated['limits'] as $limitData) {

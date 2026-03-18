@@ -171,6 +171,7 @@
                     <select id="unit" name="unit" class="form-select" required>
                         <option value="minutes" @selected($activity->unit === 'minutes')>Minutes</option>
                         <option value="times" @selected($activity->unit === 'times')>Times</option>
+                        <option value="hours" @selected($activity->unit === 'hours')>Hours</option>
                     </select>
                     <p class="help-text">How sessions are counted for this activity (duration or frequency)</p>
                 </div>

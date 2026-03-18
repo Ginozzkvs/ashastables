@@ -200,27 +200,32 @@
                 @foreach($membership->activityLimits as $limit)
                     <div class="activity-row">
                         <input type="hidden" name="limits[{{ $loop->index }}][activity_id]" value="{{ $limit->activity_id }}">
-                        <div class="activity-name">{{ $limit->activity->name }}</div>
+                        <div class="activity-name">
+                            {{ $limit->activity->name }}
+                            <span style="font-size: 0.75rem; color: #9ca3af; font-weight: 400; margin-left: 0.5rem;">({{ $limit->activity->unit === 'hours' ? 'Hours' : ($limit->activity->unit === 'minutes' ? 'Minutes' : 'Sessions') }})</span>
+                        </div>
                         <div class="activity-inputs">
                             <div class="form-group">
-                                <label class="form-label">Max Per Year</label>
+                                <label class="form-label">{{ $limit->activity->unit === 'hours' ? 'Total Hours' : 'Max Per Year' }}</label>
                                 <input 
                                     type="number" 
                                     name="limits[{{ $loop->index }}][max_per_year]" 
                                     value="{{ $limit->max_per_year }}"
                                     class="form-input"
                                     required
-                                    min="1">
+                                    min="1"
+                                    step="{{ $limit->activity->unit === 'hours' ? '0.5' : '1' }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Max Per Day</label>
+                                <label class="form-label">{{ $limit->activity->unit === 'hours' ? 'Max Hours/Day' : 'Max Per Day' }}</label>
                                 <input 
                                     type="number" 
                                     name="limits[{{ $loop->index }}][max_per_day]" 
                                     value="{{ $limit->max_per_day }}"
                                     class="form-input"
                                     required
-                                    min="1">
+                                    min="1"
+                                    step="{{ $limit->activity->unit === 'hours' ? '0.5' : '1' }}">
                             </div>
                             <form action="{{ route('memberships.remove-activity', [$membership, $limit->activity]) }}" method="POST" style="display: inline;">
                                 @csrf

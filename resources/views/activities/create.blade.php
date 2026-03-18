@@ -205,8 +205,9 @@
                         <option value="">Select unit type...</option>
                         <option value="minutes">Minutes</option>
                         <option value="times">Times</option>
+                        <option value="hours">Hours</option>
                     </select>
-                    <p class="help-text">How sessions are counted for this activity (duration in minutes or frequency in times)</p>
+                    <p class="help-text">How usage is counted: times (per session), hours (per course hour), or minutes</p>
                 </div>
 
                 <!-- Form Actions -->
