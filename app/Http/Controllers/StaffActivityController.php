@@ -49,14 +49,14 @@ class StaffActivityController extends Controller
                     if ($limit) {
                         $maxPerYear = $limit->max_per_year;
                     } else {
-                        // Estimate max from remaining + a reasonable used count
-                        // If no limit configured, assume remaining is the total available
                         $maxPerYear = $balance->remaining_count;
                     }
                     
                     // Calculate used_count 
                     $balance->used_count = max(0, $maxPerYear - $balance->remaining_count);
                     $balance->max_per_year = $maxPerYear;
+                    // Include unit from activity
+                    $balance->unit = $balance->activity->unit ?? 'times';
                     return $balance;
                 })
                 ->values(); // Re-index the collection
@@ -78,11 +78,13 @@ class StaffActivityController extends Controller
     {
         $request->validate([
             'card_uid' => 'required|string',
-            'activity_id' => 'required|integer'
+            'activity_id' => 'required|integer',
+            'amount' => 'nullable|numeric|min:0.5'
         ]);
 
         try {
-            $activityLog = ActivityService::useActivity($request->card_uid, $request->activity_id);
+            $amount = $request->input('amount', 1);
+            $activityLog = ActivityService::useActivity($request->card_uid, $request->activity_id, $amount);
             
             // Get member and activity data
             $member = $activityLog->member;
@@ -115,11 +117,13 @@ class StaffActivityController extends Controller
                 ],
                 'activity' => [
                     'name' => $activity->name,
-                    'id' => $activity->id
+                    'id' => $activity->id,
+                    'unit' => $activity->unit
                 ],
                 'membership_name' => $membershipName,
                 'remaining_sessions' => $remaining,
-                'used_sessions' => $usedSessions
+                'used_sessions' => $usedSessions,
+                'amount_used' => $amount
             ]);
         } catch (\Exception $e) {
             return response()->json([

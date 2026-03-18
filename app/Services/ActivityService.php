@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Member;
+use App\Models\Activity;
 use App\Models\MembershipActivityLimit;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
@@ -10,7 +11,7 @@ use Exception;
 
 class ActivityService
 {
-    public static function useActivity($cardUid, $activityId, $minutes = 1)
+    public static function useActivity($cardUid, $activityId, $amount = 1)
     {
         // 1️⃣ Find member
         $member = Member::where('card_uid', $cardUid)->firstOrFail();
@@ -19,7 +20,10 @@ class ActivityService
             throw new Exception('Membership expired or inactive');
         }
 
-        // 2️⃣ Get activity balance
+        // 2️⃣ Get activity to check unit type
+        $activity = Activity::findOrFail($activityId);
+
+        // 3️⃣ Get activity balance
         $balance = $member->activityBalances()
             ->where('activity_id', $activityId)
             ->first();
@@ -28,7 +32,7 @@ class ActivityService
             throw new Exception('No activity balance found');
         }
 
-        // 3️⃣ Get membership limits
+        // 4️⃣ Get membership limits
         $limit = MembershipActivityLimit::where('membership_id', $member->membership_id)
             ->where('activity_id', $activityId)
             ->first();
@@ -37,27 +41,27 @@ class ActivityService
             throw new Exception('Activity not allowed for this membership');
         }
 
-        // 4️⃣ Reset daily usage if new day
+        // 5️⃣ Reset daily usage if new day
         if ($balance->last_used_date !== now()->toDateString()) {
             $balance->used_today = 0;
             $balance->last_used_date = now()->toDateString();
         }
 
-        // 5️⃣ Daily limit check
+        // 6️⃣ Daily limit check
         if ($limit->max_per_day !== null) {
-            if (($balance->used_today + $minutes) > $limit->max_per_day) {
+            if (($balance->used_today + $amount) > $limit->max_per_day) {
                 throw new Exception('Daily limit exceeded');
             }
         }
 
-        // 6️⃣ Total remaining check
-        if ($balance->remaining_count <= 0) {
+        // 7️⃣ Total remaining check
+        if ($balance->remaining_count < $amount) {
             throw new Exception('No remaining usage');
         }
 
-        // 7️⃣ Apply usage
-        $balance->used_today += $minutes;
-        $balance->remaining_count -= 1;
+        // 8️⃣ Apply usage — decrement by amount
+        $balance->used_today += $amount;
+        $balance->remaining_count -= $amount;
         $balance->save();
 	
         $user = auth()->user();

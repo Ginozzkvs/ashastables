@@ -78,21 +78,31 @@ class PrinterService
         $receipt .= "Activity Details\n";
         $receipt .= "\x1B\x45\x00";
         $receipt .= "Activity: " . ($data['activity_name'] ?? '-') . "\n";
-        $receipt .= "Sessions Used: 1\n";
-        $receipt .= "Staff: Member Staff\n";
+
+        // Show hours or sessions based on unit
+        $unit = $data['unit'] ?? 'times';
+        $amountUsed = $data['amount_used'] ?? 1;
+        if ($unit === 'hours') {
+            $receipt .= "Hours Used: " . $amountUsed . "\n";
+        } else {
+            $receipt .= "Sessions Used: 1\n";
+        }
+
+        $receipt .= "Staff: " . ($data['staff_name'] ?? 'Staff') . "\n";
         $receipt .= $divider . "\n\n";
 
         // Session balance
         $used = $data['used_count'] ?? $data['used_sessions'] ?? 0;
         $remaining = $data['remaining_count'] ?? $data['remaining_sessions'] ?? 0;
         $total = $used + $remaining;
+        $unitLabel = ($unit === 'hours') ? 'Hours' : 'Sessions';
 
         $receipt .= "\x1B\x45\x01";
-        $receipt .= "Session Balance\n";
+        $receipt .= ($unit === 'hours' ? 'Hour' : 'Session') . " Balance\n";
         $receipt .= "\x1B\x45\x00";
-        $receipt .= "Sessions Used: " . str_pad($used, 20, '.', STR_PAD_LEFT) . "\n";
-        $receipt .= "Sessions Left: " . str_pad($remaining, 19, '.', STR_PAD_LEFT) . "\n";
-        $receipt .= "Total Sessions: " . str_pad($total, 18, '.', STR_PAD_LEFT) . "\n";
+        $receipt .= $unitLabel . " Used: " . str_pad($used, 24 - strlen($unitLabel), '.', STR_PAD_LEFT) . "\n";
+        $receipt .= $unitLabel . " Left: " . str_pad($remaining, 24 - strlen($unitLabel), '.', STR_PAD_LEFT) . "\n";
+        $receipt .= "Total " . $unitLabel . ": " . str_pad($total, 22 - strlen($unitLabel), '.', STR_PAD_LEFT) . "\n";
         $receipt .= $divider . "\n\n";
 
         // Status - center

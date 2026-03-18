@@ -363,17 +363,25 @@
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #d4af37;">
                     <div>
                         <p class="card-label">{{ __('messages.used') }}</p>
-                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #d1d5db;" x-text="a.used_count || 0"></p>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #d1d5db;">
+                            <span x-text="a.used_count || 0"></span>
+                            <span style="font-size: 0.75rem; color: #9ca3af;" x-text="a.unit === 'hours' ? 'hrs' : ''"></span>
+                        </p>
                     </div>
                     <div>
                         <p class="card-label">{{ __('messages.remaining') }}</p>
                         <p style="margin: 0; font-size: 1.5rem; font-weight: 700;" :class="Number(a.remaining_count) > 0 ? 'text-green-400' : 'text-red-400'" 
-                           :style="Number(a.remaining_count) > 0 ? 'color: #4ade80;' : 'color: #f87171;'"
-                           x-text="a.remaining_count"></p>
+                           :style="Number(a.remaining_count) > 0 ? 'color: #4ade80;' : 'color: #f87171;'">
+                           <span x-text="a.remaining_count"></span>
+                           <span style="font-size: 0.75rem; color: #9ca3af;" x-text="a.unit === 'hours' ? 'hrs' : ''"></span>
+                        </p>
                     </div>
                     <div>
                         <p class="card-label">{{ __('messages.total') }}</p>
-                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #d1d5db;" x-text="Number(a.remaining_count) + (a.used_count || 0)"></p>
+                        <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #d1d5db;">
+                            <span x-text="Number(a.remaining_count) + (a.used_count || 0)"></span>
+                            <span style="font-size: 0.75rem; color: #9ca3af;" x-text="a.unit === 'hours' ? 'hrs' : ''"></span>
+                        </p>
                     </div>
                 </div>
 
@@ -386,13 +394,25 @@
                     </div>
                 </div>
 
+                <!-- HOUR INPUT for hour-based activities -->
+                <template x-if="a.unit === 'hours'">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="color: #d4af37; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">Hours to deduct</label>
+                        <input type="number" min="0.5" step="0.5" :max="a.remaining_count" 
+                               x-model.number="a.hoursInput"
+                               @focus="a.hoursInput = a.hoursInput || 1"
+                               style="width: 100%; padding: 0.5rem; margin-top: 0.25rem; background: #1a1f2e; border: 1px solid #d4af37; color: #e0e0e0; border-radius: 0.375rem; font-size: 1.25rem; text-align: center;" 
+                               placeholder="1">
+                    </div>
+                </template>
+
                 <!-- RESERVE BUTTON -->
                 <button
                     :disabled="Number(a.remaining_count) <= 0"
-                    @click="openConfirm(a.activity.id)"
+                    @click="openConfirm(a.activity.id, a.unit, a.unit === 'hours' ? (a.hoursInput || 1) : 1)"
                     :class="Number(a.remaining_count) > 0 ? 'btn btn-gold' : 'btn btn-disabled'"
                 >
-                    <span x-show="Number(a.remaining_count) > 0">{{ __('messages.reserve_session') }}</span>
+                    <span x-show="Number(a.remaining_count) > 0" x-text="a.unit === 'hours' ? 'Deduct Hours' : '{{ __('messages.reserve_session') }}'"></span>
                     <span x-show="Number(a.remaining_count) <= 0">{{ __('messages.fully_booked') }}</span>
                 </button>
             </div>
@@ -516,6 +536,8 @@ function scanComponent() {
             type: 'confirm',
             message: '',
             activityId: null,
+            unit: 'times',
+            amount: 1
         },
         
         init() {
@@ -585,12 +607,16 @@ function scanComponent() {
             })
         },
 
-        openConfirm(activityId) {
+        openConfirm(activityId, unit, amount) {
             this.modal = {
                 show: true,
                 type: 'confirm',
-                message: '{{ __('messages.reserve_this_session') }}',
-                activityId
+                message: unit === 'hours' 
+                    ? 'Deduct ' + amount + ' hour(s) from this activity?' 
+                    : '{{ __('messages.reserve_this_session') }}',
+                activityId,
+                unit: unit || 'times',
+                amount: amount || 1
             }
         },
 
@@ -616,7 +642,8 @@ function scanComponent() {
                     },
                     body: JSON.stringify({
                         card_uid: this.card_uid,
-                        activity_id: this.modal.activityId
+                        activity_id: this.modal.activityId,
+                        amount: this.modal.amount || 1
                     })
                 })
 
@@ -638,7 +665,10 @@ function scanComponent() {
                             membership_name: data.membership_name,
                             remaining_sessions: data.remaining_sessions,
                             used_sessions: data.used_sessions,
-                            timestamp: timestamp
+                            timestamp: timestamp,
+                            staff_name: '{{ auth()->user()->name }}',
+                            unit: data.activity.unit || 'times',
+                            amount_used: data.amount_used || 1
                         })
                     }
                     

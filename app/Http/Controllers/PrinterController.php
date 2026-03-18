@@ -124,7 +124,10 @@ class PrinterController extends Controller
                 'timestamp' => $receipt['timestamp'] ?? now()->format('Y-m-d H:i:s'),
                 'remaining_count' => $receipt['remaining_sessions'] ?? 0,
                 'used_count' => $receipt['used_sessions'] ?? 0,
-                'membership_name' => $receipt['membership_name'] ?? 'Standard Membership'
+                'membership_name' => $receipt['membership_name'] ?? 'Standard Membership',
+                'staff_name' => $receipt['staff_name'] ?? (auth()->user()->name ?? 'Staff'),
+                'unit' => $receipt['unit'] ?? 'times',
+                'amount_used' => $receipt['amount_used'] ?? 1
             ];
 
             PrintJob::create([

@@ -71,10 +71,10 @@ while (true) {
                 
                 if ($success) {
                     echo "Printed! ";
-                    // Report back to server as done
-                    markJobDone($SERVER_URL, $PRINT_TOKEN, $job['id']);
+                    markJobDone($SERVER_URL, $PRINT_TOKEN, $job['id'], 'printed');
                 } else {
-                    echo "FAILED to connect to printer.\n";
+                    echo "FAILED - marking as failed.\n";
+                    markJobDone($SERVER_URL, $PRINT_TOKEN, $job['id'], 'failed');
                 }
             }
         }
@@ -109,12 +109,12 @@ function printToEthernet($ip, $port, $content) {
 /**
  * Send an API call back to the server to mark a job as completed
  */
-function markJobDone($server_url, $token, $jobId) {
+function markJobDone($server_url, $token, $jobId, $status = 'printed') {
     $url = $server_url . "/api/print/done/" . $jobId . "?token=" . urlencode($token);
     
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['status' => 'printed']));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['status' => $status]));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
